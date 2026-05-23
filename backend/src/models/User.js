@@ -1,14 +1,18 @@
 import {
   Entity,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
   Column,
   ManyToMany,
   OneToMany,
   JoinTable,
 } from "typeorm";
-import { Game } from "./Game.js";
-import { Review } from "./Review.js";
-import { BuySell } from "./BuySell.js";
+import { Game } from "./Album.js";
+import { Review } from "./Music.js";
+import { BuySell } from "./Playlist.js";
+
+import UserRole from "./enums/UserRole.js";
 
 @Entity("users")
 class User {
@@ -28,27 +32,62 @@ class User {
   })
   email;
 
-  @ManyToMany(() => Game, (game) => game.users, {
+  @Column({
+    type: "text",
+    nullable: false
+  })
+  password;
+
+  @Column({
+    type: "text",
+  })
+  bio;
+
+  @Column({
+    type: "text"
+  })
+  profile_url;
+
+  @Column({
+    type: "boolean",
+    default: true
+  })
+  is_active;
+
+  @Column({
+    type: "enum",
+    enum: Object.values(UserRole),
+    default: UserRole.LISTENER
+  })
+  role;
+
+  @ManyToMany(() => Music, (music) => music.artists, {
     cascade: false,
   })
   @JoinTable({
-    name: "user_games",
+    name: "artist_music",
     joinColumn: {
-      name: "userId",
+      name: "musicId",
       referencedColumnName: "id",
     },
     inverseJoinColumn: {
-      name: "gameId",
+      name: "artistId",
       referencedColumnName: "id",
     },
   })
-  games;
+  musics;
 
-  @OneToMany(() => Review, (review) => review.user)
-  reviews;
+  @OneToMany(() => Playlist, (playlist) => playlist.user)
+  paylists;
 
-  @OneToMany(() => BuySell, (buySell) => buySell.user)
-  buySells;
+  @OneToMany(() => Album, (album) => album.user)
+  albuns;
+
+  @CreateDateColumn({ type: "timestamp" })
+  created_at;
+
+  @UpdateDateColumn({ type: "timestamp" })
+  updated_at;
 }
 
 export { User };

@@ -4,7 +4,7 @@ import {
   registerBuySell,
   editBuySell,
   deleteBuySell,
-} from "../services/buySellService.js";
+} from "../services/paylistService.js";
 
 function parseId(idParam) {
   const id = Number(idParam);
@@ -14,9 +14,9 @@ function parseId(idParam) {
   return id;
 }
 
-export async function getBuySells(req, res) {
+export async function getPlaylists(req, res) {
   try {
-    const buySells = await findAllBuySells();
+    const playlists = await findAllBuySells();
     return res.json(buySells);
   } catch {
     return res.status(500).json({ message: req.__("errors.internal_server") });

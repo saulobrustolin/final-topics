@@ -2,9 +2,10 @@ import dotenv from "dotenv";
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { User } from "../models/User.js";
-import { Game } from "../models/Game.js";
-import { Review } from "../models/Review.js";
-import { BuySell } from "../models/BuySell.js";
+import { Album } from "../models/Album.js";
+import { Music } from "../models/Music.js";
+import { Playlist } from "../models/Playlist.js";
+import { PlaylistMusic } from "../models/PlaylistMusic.js";
 
 dotenv.config();
 
@@ -17,7 +18,7 @@ const databaseConfig = {
   database: process.env.DB_NAME || "aula",
   synchronize: process.env.DB_SYNCHRONIZE === "true" || true,
   logging: false,
-  entities: [User, Game, Review, BuySell],
+  entities: [User, Album, Music, Playlist, PlaylistMusic],
 };
 
 export const appDataSource = new DataSource(databaseConfig);
