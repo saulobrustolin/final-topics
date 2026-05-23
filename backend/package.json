@@ -1,0 +1,31 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "main": "src/server.js",
+  "scripts": {
+    "build": "babel src --out-dir dist --extensions .js --copy-files",
+    "dev": "nodemon --watch src --ext js,mjs,cjs,json --exec \"npm run build && node dist/server.js\"",
+    "start": "npm run build && node dist/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "i18n": "^0.15.3",
+    "pg": "^8.20.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.27"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/cli": "^7.28.0",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-decorators": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "nodemon": "^3.1.14"
+  }
+}
