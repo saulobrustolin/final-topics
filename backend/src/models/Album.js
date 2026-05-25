@@ -7,10 +7,9 @@ import {
   OneToMany,
 } from "typeorm";
 import { User } from "./User.js";
-import { Review } from "./Music.js";
-import { BuySell } from "./Playlist.js";
+import { Music } from "./Music.js";
 
-@Entity("albuns")
+@Entity("albums")
 class Album {
   @PrimaryGeneratedColumn()
   id;
@@ -32,6 +31,9 @@ class Album {
     nullable: true,
   })
   coverUrl;
+
+  @Column({ name: "userId", type: "int" })
+  userId;
 
   @ManyToOne(() => User, (user) => user.albums, {
     onDelete: "CASCADE",

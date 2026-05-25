@@ -11,10 +11,18 @@ export async function getUserById(id) {
   return getRepository(User).findOneBy({ id });
 }
 
-export async function createUser({ name, email }) {
+export async function findById(id) {
+  return getRepository(User).findOneBy({ id });
+}
+
+export async function createUser(data) {
   const repository = getRepository(User);
-  const user = repository.create({ name, email });
+  const user = repository.create(data);
   return repository.save(user);
+}
+
+export async function create(data) {
+  return createUser(data);
 }
 
 export async function updateUser(id, data) {
@@ -37,3 +45,19 @@ export async function removeUser(id) {
 export async function getUserByEmail(email) {
   return getRepository(User).findOneBy({ email });
 }
+
+export async function findByEmail(email) {
+  return getRepository(User).findOneBy({ email });
+}
+
+export const userRepository = {
+  listUsers,
+  getUserById,
+  findById,
+  createUser,
+  create,
+  updateUser,
+  removeUser,
+  getUserByEmail,
+  findByEmail
+};

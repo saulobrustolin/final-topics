@@ -6,17 +6,23 @@ import {
   Column,
   ManyToOne,
   ManyToMany,
+  OneToMany,
   JoinColumn,
-  Unique,
 } from "typeorm";
+import { Album } from "./Album.js";
 import { User } from "./User.js";
-import { Game } from "./Album.js";
+import { PlaylistMusic } from "./PlaylistMusic.js";
 
 @Entity("musics")
-@Unique(["userId", "musicId"])
 class Music {
   @PrimaryGeneratedColumn()
   id;
+
+  @Column({
+    type: "varchar",
+    nullable: false,
+  })
+  title;
 
   @Column({
     type: "int",
@@ -32,7 +38,7 @@ class Music {
 
   @Column({
     type: "text",
-    nullable: false,
+    nullable: true,
   })
   coverUrl;
 
@@ -49,8 +55,21 @@ class Music {
   @ManyToMany(() => User, (user) => user.musics)
   artists;
 
-  @ManyToMany(() => PaylistMusic, (playlistMusic) => playlistMusic.paylist)
-  paylists;
+  @ManyToOne(() => User, {
+    onDelete: "SET NULL",
+    onUpdate: "CASCADE",
+    nullable: false,
+  })
+  @JoinColumn({
+    name: "ownerId",
+  })
+  owner;
+
+  @Column({ name: "ownerId", type: "int", nullable: false })
+  ownerId;
+
+  @OneToMany(() => PlaylistMusic, (playlistMusic) => playlistMusic.music)
+  playlistMusics;
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt;

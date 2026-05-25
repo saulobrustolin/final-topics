@@ -9,6 +9,8 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { Toaster } from "./components/Toaster";
+import { PlayerProvider } from "./contexts/PlayerContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -33,7 +35,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <PlayerProvider>
+          {children}
+          <Toaster position="top-right" />
+        </PlayerProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

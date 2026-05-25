@@ -9,8 +9,7 @@ import {
   JoinColumn,
 } from "typeorm";
 import { User } from "./User.js";
-import { Game } from "./Album.js";
-import { PaylistMusic } from "./PlaylistMusic.js";
+import { PlaylistMusic } from "./PlaylistMusic.js";
 
 @Entity("playlists")
 class Playlist {
@@ -24,24 +23,24 @@ class Playlist {
   title;
 
   @Column({
-    type: "text"
+    type: "text",
+    nullable: true
   })
   description;
 
   @Column({
     type: "text",
-    nullable: false,
+    nullable: true,
   })
   coverUrl;
 
-  @Column({
-    type: "boolean",
-    nullable: false,
-    default: false
-  })
+  @Column({ type: "boolean", nullable: false, default: false })
   isPrivate;
 
-  @ManyToOne(() => User, (user) => user.paylists, {
+  @Column({ name: "userId", type: "int" })
+  userId;
+
+  @ManyToOne(() => User, (user) => user.playlists, {
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
     nullable: false,
@@ -51,7 +50,7 @@ class Playlist {
   })
   user;
 
-  @OneToMany(() => PaylistMusic, (playlistMusic) => playlistMusic.playlist)
+  @OneToMany(() => PlaylistMusic, (playlistMusic) => playlistMusic.playlist)
   musics;
 
   @CreateDateColumn({ type: "timestamp" })

@@ -1,75 +1,75 @@
-import {
-  listUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  removeUser,
-  getUserByEmail,
-} from "../repositories/userRepository.js";
-
-function validateUserPayload({ name, email }) {
-  if (!name || !email) {
-    return "errors.required_name_email";
-  }
-
-  return null;
-}
-
-export async function findAllUsers() {
-  return listUsers();
-}
+import { userRepository } from "../repositories/userRepository.js";
+import { playlistRepository } from "../repositories/playlistRepository.js";
+import { albumRepository } from "../repositories/albumRepository.js";
+import { musicRepository } from "../repositories/musicRepository.js";
+import UserRole from "../models/enums/UserRole.js";
+import { S3Service } from "./S3Service.js";
 
 export async function findUserById(id) {
-  return getUserById(id);
+  return userRepository.getUserById(id);
 }
 
-export async function registerUser(payload) {
-  const validationError = validateUserPayload(payload);
-  if (validationError) {
-    return { errorKey: validationError, status: 400 };
+export async function getArtistData(artistId) {
+  const artist = await userRepository.getUserById(artistId);
+  if (!artist || artist.role !== UserRole.ARTIST) {
+    return { errorKey: "errors.artist_not_found", status: 404 };
   }
 
-  const existingUser = await getUserByEmail(payload.email);
-  if (existingUser) {
-    return { errorKey: "errors.email_already_registered", status: 409 };
+  if (artist.profile_url) {
+    artist.profile_url = await S3Service.getPresignedUrl('profile', artist.profile_url);
   }
 
-  const user = await createUser(payload);
-  return { data: user, status: 201 };
+  const albums = await albumRepository.listAlbumsByArtist(artistId);
+  for (const album of albums) {
+    if (album.coverUrl) {
+      album.coverUrl = await S3Service.getPresignedUrl('cover', album.coverUrl);
+    }
+  }
+
+  const playlists = await playlistRepository.listPlaylists(artistId);
+  const publicPlaylists = playlists.filter(p => !p.isPrivate);
+  for (const playlist of publicPlaylists) {
+    if (playlist.coverUrl) {
+      playlist.coverUrl = await S3Service.getPresignedUrl('cover', playlist.coverUrl);
+    }
+  }
+
+  return {
+    data: {
+      artist,
+      albums,
+      playlists: publicPlaylists
+    },
+    status: 200
+  };
 }
 
-export async function editUser(id, payload) {
-  const currentUser = await getUserById(id);
-  if (!currentUser) {
-    return { errorKey: "errors.user_not_found", status: 404 };
+export async function updateArtistMusic(artistId, musicId, userId, userRole, data) {
+  // RN05 Somente artistas podem alterar dados de musicas
+  if (userRole !== UserRole.ARTIST && userRole !== UserRole.ADMIN) {
+    return { errorKey: "errors.forbidden", status: 403 };
   }
 
-  const nextName = payload.name ?? currentUser.name;
-  const nextEmail = payload.email ?? currentUser.email;
-
-  const validationError = validateUserPayload({ name: nextName, email: nextEmail });
-  if (validationError) {
-    return { errorKey: validationError, status: 400 };
+  // Check if artist is the one requesting OR is admin
+  if (artistId !== userId && userRole !== UserRole.ADMIN) {
+    return { errorKey: "errors.forbidden", status: 403 };
   }
 
-  const userWithEmail = await getUserByEmail(nextEmail);
-  if (userWithEmail && userWithEmail.id !== id) {
-    return { errorKey: "errors.email_already_registered", status: 409 };
+  const music = await musicRepository.getMusicById(musicId);
+  if (!music) {
+    return { errorKey: "errors.music_not_found", status: 404 };
   }
 
-  const updated = await updateUser(id, {
-    name: nextName,
-    email: nextEmail,
-  });
+  // RN06 Artistas não podem alterar dados de músicas de álbuns que não são de sua propriedade
+  if (music.album.userId !== artistId && userRole !== UserRole.ADMIN) {
+    return { errorKey: "errors.forbidden", status: 403 };
+  }
+
+  const updated = await musicRepository.updateMusic(musicId, data);
+  
+  if (updated.coverUrl) {
+    updated.coverUrl = await S3Service.getPresignedUrl('cover', updated.coverUrl);
+  }
 
   return { data: updated, status: 200 };
-}
-
-export async function deleteUser(id) {
-  const deleted = await removeUser(id);
-  if (!deleted) {
-    return { errorKey: "errors.user_not_found", status: 404 };
-  }
-
-  return { status: 204 };
 }

@@ -8,9 +8,9 @@ import {
   OneToMany,
   JoinTable,
 } from "typeorm";
-import { Game } from "./Album.js";
-import { Review } from "./Music.js";
-import { BuySell } from "./Playlist.js";
+import { Album } from "./Album.js";
+import { Music } from "./Music.js";
+import { Playlist } from "./Playlist.js";
 
 import UserRole from "./enums/UserRole.js";
 
@@ -40,11 +40,13 @@ class User {
 
   @Column({
     type: "text",
+    nullable: true
   })
   bio;
 
   @Column({
-    type: "text"
+    type: "text",
+    nullable: true
   })
   profile_url;
 
@@ -67,21 +69,21 @@ class User {
   @JoinTable({
     name: "artist_music",
     joinColumn: {
-      name: "musicId",
+      name: "artistId",
       referencedColumnName: "id",
     },
     inverseJoinColumn: {
-      name: "artistId",
+      name: "musicId",
       referencedColumnName: "id",
     },
   })
   musics;
 
   @OneToMany(() => Playlist, (playlist) => playlist.user)
-  paylists;
+  playlists;
 
   @OneToMany(() => Album, (album) => album.user)
-  albuns;
+  albums;
 
   @CreateDateColumn({ type: "timestamp" })
   created_at;

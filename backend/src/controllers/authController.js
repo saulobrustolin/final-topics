@@ -1,20 +1,27 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { userRepository } from '../repositories/userRepository';
+import { userRepository } from '../repositories/userRepository.js';
+import { S3Service } from '../services/S3Service.js';
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'secret', {
     expiresIn: '1d',
   });
 };
 
-const register = async (req, res) => {
+export const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
     const userExists = await userRepository.findByEmail(email);
     if (userExists) {
       return res.status(400).json({ message: 'Este e-mail já está cadastrado.' });
+    }
+
+    let profile_url = null;
+    if (req.file) {
+      const key = `profile-${Date.now()}-${req.file.originalname}`;
+      profile_url = await S3Service.uploadFile(req.file, 'profile', key);
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -25,6 +32,7 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
       role: role || 'listener',
+      profile_url
     });
 
     return res.status(201).json({
@@ -39,7 +47,7 @@ const register = async (req, res) => {
   }
 };
 
-const login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -54,10 +62,6 @@ const login = async (req, res) => {
     }
 
     return res.status(200).json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
       token: generateToken(user.id),
     });
   } catch (error) {
@@ -65,4 +69,4 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+export const authController = { register, login };

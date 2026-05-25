@@ -1,14 +1,14 @@
-import { userRepository } from "../repositories/userRepository";
-import { jwt } from "";
+import jwt from 'jsonwebtoken';
+import { userRepository } from "../repositories/userRepository.js";
 
-const protect = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   let token;
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
       token = req.headers.authorization.split(' ')[1];
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
 
       req.user = await userRepository.findById(decoded.id); 
       
@@ -27,13 +27,11 @@ const protect = async (req, res, next) => {
   }
 };
 
-const restrictTo = (...allowedRoles) => {
+export const restrictTo = (...allowedRoles) => {
   return (req, res, next) => {
-    if (!allowedRoles.includes(req.user.role)) {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
       return res.status(403).json({ message: 'Você não tem permissão para realizar esta ação.' });
     }
     next();
   };
 };
-
-module.exports = { protect, restrictTo };

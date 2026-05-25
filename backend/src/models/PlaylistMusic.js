@@ -5,29 +5,35 @@ import {
   UpdateDateColumn,
   Column,
   ManyToOne,
-  ManyToMany,
-  JoinColumn,
   Unique,
 } from "typeorm";
-import { User } from "./User.js";
-import { Game } from "./Album.js";
+import { Playlist } from "./Playlist.js";
+import { Music } from "./Music.js";
 
-@Entity("musics")
-@Unique(["paylist", "music"])
+@Entity("playlist_musics")
+@Unique(["playlist", "music"])
 class PlaylistMusic {
   @PrimaryGeneratedColumn()
   id;
 
-  @Column({ type: "integer" })
+  @Column({ type: "integer", default: 0 })
   position;
 
   @CreateDateColumn({ type: "timestamp" })
   addedAt;
 
-  @ManyToOne(() => Playlist, (playlist) => playlist.musics)
+  @ManyToOne(() => Playlist, (playlist) => playlist.musics, {
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+    nullable: false
+  })
   playlist;
 
-  @ManyToOne(() => Music, (music) => music.paylists)
+  @ManyToOne(() => Music, (music) => music.playlistMusics, {
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+    nullable: false
+  })
   music;
 
   @UpdateDateColumn({ type: "timestamp" })
