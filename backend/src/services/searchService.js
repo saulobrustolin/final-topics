@@ -1,10 +1,12 @@
 import { albumRepository } from "../repositories/albumRepository.js";
 import { musicRepository } from "../repositories/musicRepository.js";
+import { playlistRepository } from "../repositories/playlistRepository.js";
 import { S3Service } from "./S3Service.js";
 
 export async function search(q, page, size) {
   const albums = await albumRepository.searchAlbums(q, page, size);
   const musics = await musicRepository.searchMusics(q, page, size);
+  const playlists = await playlistRepository.searchPlaylists(q, page, size);
 
   const portFrontend = process.env.FRONTEND_PORT || 3000;
 
@@ -36,6 +38,7 @@ export async function search(q, page, size) {
     }
 
     return {
+      id: music.id,
       name: music.title,
       duration: formatDuration(music.duration),
       coverUrl: signedCoverUrl,
@@ -45,9 +48,24 @@ export async function search(q, page, size) {
     };
   }));
 
+  const mappedPlaylists = await Promise.all(playlists.map(async (playlist) => {
+    let signedCoverUrl = null;
+    if (playlist.coverUrl) {
+      signedCoverUrl = await S3Service.getPresignedUrl('cover', playlist.coverUrl);
+    }
+    return {
+      id: playlist.id,
+      name: playlist.title,
+      owner: playlist.user?.name || "Unknown User",
+      coverUrl: signedCoverUrl,
+      isPrivate: playlist.isPrivate
+    };
+  }));
+
   return {
     albuns: mappedAlbums,
-    musics: mappedMusics
+    musics: mappedMusics,
+    playlists: mappedPlaylists
   };
 }
 

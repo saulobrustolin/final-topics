@@ -49,6 +49,22 @@ export async function createPlaylist(userId, data) {
   return signPlaylistUrls(playlist);
 }
 
+export async function followPlaylist(userId, playlistId) {
+  const success = await playlistRepository.followPlaylist(userId, playlistId);
+  if (!success) {
+    return { errorKey: "errors.playlist_not_found", status: 404 };
+  }
+  return { status: 200 };
+}
+
+export async function unfollowPlaylist(userId, playlistId) {
+  const success = await playlistRepository.unfollowPlaylist(userId, playlistId);
+  if (!success) {
+    return { errorKey: "errors.playlist_not_found", status: 404 };
+  }
+  return { status: 200 };
+}
+
 export async function listUserPlaylists(userId) {
   const playlists = await playlistRepository.listPlaylists(userId);
   

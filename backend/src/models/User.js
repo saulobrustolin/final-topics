@@ -85,6 +85,20 @@ class User {
   @OneToMany(() => Album, (album) => album.user)
   albums;
 
+  @ManyToMany(() => Playlist, { cascade: false })
+  @JoinTable({
+    name: "user_followed_playlists",
+    joinColumn: {
+      name: "userId",
+      referencedColumnName: "id",
+    },
+    inverseJoinColumn: {
+      name: "playlistId",
+      referencedColumnName: "id",
+    },
+  })
+  followedPlaylists;
+
   @CreateDateColumn({ type: "timestamp" })
   created_at;
 

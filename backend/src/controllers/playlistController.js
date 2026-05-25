@@ -81,6 +81,41 @@ export async function updatePlaylist(req, res) {
   }
 }
 
+export async function followPlaylist(req, res) {
+  const id = parseId(req.params.id);
+  if (id === null) {
+    return res.status(400).json({ message: req.__("errors.invalid_id") });
+  }
+
+  try {
+    const result = await playlistService.followPlaylist(req.user.id, id);
+    if (result.errorKey) {
+      return res.status(result.status).json({ message: req.__(result.errorKey) });
+    }
+    return res.status(200).send();
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ message: req.__("errors.internal_server") });
+  }
+}
+
+export async function unfollowPlaylist(req, res) {
+  const id = parseId(req.params.id);
+  if (id === null) {
+    return res.status(400).json({ message: req.__("errors.invalid_id") });
+  }
+
+  try {
+    const result = await playlistService.unfollowPlaylist(req.user.id, id);
+    if (result.errorKey) {
+      return res.status(result.status).json({ message: req.__(result.errorKey) });
+    }
+    return res.status(200).send();
+  } catch (error) {
+    return res.status(500).json({ message: req.__("errors.internal_server") });
+  }
+}
+
 export async function addMusicToPlaylist(req, res) {
   const id = parseId(req.params.id);
   const { musicId } = req.body;

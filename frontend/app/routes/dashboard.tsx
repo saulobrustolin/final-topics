@@ -11,6 +11,7 @@ import { requireAuth } from "../utils/protected";
 import { toast } from "sonner";
 import { type Music } from "../contexts/PlayerContext";
 import { api } from "../utils/api";
+import { Plus } from "lucide-react";
 
 export function meta() {
   return [
@@ -31,12 +32,19 @@ interface AlbumResult {
   albumUrl: string;
 }
 
+interface PlaylistResult {
+  id: number;
+  name: string;
+  owner: string;
+  coverUrl?: string;
+}
+
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState<any>(null);
   const [selectedAlbum, setSelectedAlbum] = useState<any>(null);
-  const [searchResults, setSearchResults] = useState<{ tracks: Music[], albums: AlbumResult[], query: string } | null>(null);
+  const [searchResults, setSearchResults] = useState<{ tracks: Music[], albums: AlbumResult[], playlists: PlaylistResult[], query: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Create Playlist State
@@ -250,7 +258,7 @@ export default function Dashboard() {
       
       // Map backend search results to Music interface
       const tracks: Music[] = (data.musics || []).map((m: any) => ({
-        id: parseInt(m.musicUrl.split('/').pop() || "0"),
+        id: m.id,
         title: m.name,
         duration: m.duration,
         coverUrl: m.coverUrl,
@@ -267,13 +275,31 @@ export default function Dashboard() {
         albumUrl: a.albumUrl
       }));
 
+      // Map backend search results to PlaylistResult interface
+      const playlistsResults: PlaylistResult[] = (data.playlists || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        owner: p.owner,
+        coverUrl: p.coverUrl
+      }));
+
       setSelectedAlbum(null);
       setSelectedPlaylist(null);
-      setSearchResults({ tracks, albums, query });
+      setSearchResults({ tracks, albums, playlists: playlistsResults, query });
     } catch (err) {
       toast.error("Erro ao realizar busca");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFollowPlaylist = async (playlistId: number) => {
+    try {
+      await api.post(`/playlist/${playlistId}/follow`);
+      toast.success("Playlist adicionada à sua biblioteca!");
+      await fetchPlaylists();
+    } catch (err: any) {
+      toast.error("Erro ao seguir playlist");
     }
   };
 
@@ -310,6 +336,51 @@ export default function Dashboard() {
       toast.error(message);
     }
   };
+
+  const PlaylistSearchResultList = ({ playlists, onSelectPlaylist, onFollow }: { playlists: PlaylistResult[], onSelectPlaylist: (id: number) => void, onFollow: (id: number) => void }) => (
+    <div className="p-8">
+      {playlists.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-gray-400 italic">
+          Nenhuma playlist encontrada.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {playlists.map((playlist) => (
+            <div 
+              key={playlist.id} 
+              className="group flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all border border-transparent hover:border-gray-200"
+            >
+              <div className="flex items-center gap-4 cursor-pointer flex-1 min-w-0" onClick={() => onSelectPlaylist(playlist.id)}>
+                <div className="w-12 h-12 bg-gray-200 rounded overflow-hidden shrink-0 shadow-sm">
+                  {playlist.coverUrl ? (
+                    <img src={playlist.coverUrl} alt={playlist.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                       <Plus className="w-6 h-6 rotate-45" /> {/* placeholder icon */}
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <h3 className="font-bold text-black truncate">{playlist.name}</h3>
+                  <p className="text-xs text-gray-500 truncate">Playlist • Por {playlist.owner}</p>
+                </div>
+              </div>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFollow(playlist.id);
+                }}
+                className="p-2 border border-gray-200 rounded-lg hover:bg-black hover:text-white transition-colors bg-white shadow-sm cursor-pointer ml-4"
+                title="Adicionar à biblioteca"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   const AlbumList = ({ albums, onSelectAlbum }: { albums: AlbumResult[], onSelectAlbum: (id: number) => void }) => (
     <div className="p-8">
@@ -380,6 +451,11 @@ export default function Dashboard() {
                       id: "albums",
                       label: `Álbuns (${searchResults.albums.length})`,
                       content: <AlbumList albums={searchResults.albums} onSelectAlbum={fetchAlbumDetails} />
+                    },
+                    {
+                      id: "playlists",
+                      label: `Playlists (${searchResults.playlists.length})`,
+                      content: <PlaylistSearchResultList playlists={searchResults.playlists} onSelectPlaylist={fetchPlaylistDetails} onFollow={handleFollowPlaylist} />
                     }
                   ]}
                 />

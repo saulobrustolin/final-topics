@@ -126,6 +126,8 @@ router.get("/", playlistController.getPlaylists);
 router.get("/:id", playlistController.getPlaylistById);
 router.patch("/:id", upload.single('cover'), playlistController.updatePlaylist);
 router.post("/:id", playlistController.addMusicToPlaylist);
+router.post("/:id/follow", playlistController.followPlaylist);
+router.delete("/:id/follow", playlistController.unfollowPlaylist);
 
 /**
  * @swagger

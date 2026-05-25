@@ -58,14 +58,14 @@ class Music {
   @ManyToOne(() => User, {
     onDelete: "SET NULL",
     onUpdate: "CASCADE",
-    nullable: false,
+    nullable: true,
   })
   @JoinColumn({
     name: "ownerId",
   })
   owner;
 
-  @Column({ name: "ownerId", type: "int", nullable: false })
+  @Column({ name: "ownerId", type: "int", nullable: true })
   ownerId;
 
   @OneToMany(() => PlaylistMusic, (playlistMusic) => playlistMusic.music)
