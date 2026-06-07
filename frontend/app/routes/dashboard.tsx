@@ -55,6 +55,16 @@ export default function Dashboard() {
   const [isSubmittingPlaylist, setIsSubmittingPlaylist] = useState(false);
   const [createPreviewUrl, setCreatePreviewUrl] = useState<string | null>(null);
 
+  // Create Album State
+  const [isCreateAlbumOpen, setIsCreateAlbumOpen] = useState(false);
+  const [albumTitle, setAlbumTitle] = useState("");
+  const [albumDescription, setAlbumDescription] = useState("");
+  const [albumReleaseDate, setAlbumReleaseDate] = useState("");
+  const [albumCoverFile, setAlbumCoverFile] = useState<File | null>(null);
+  const [albumCoverPreview, setAlbumCoverPreview] = useState<string | null>(null);
+  const [albumMusics, setAlbumMusics] = useState<{ file: File; title: string }[]>([]);
+  const [isSubmittingAlbum, setIsSubmittingAlbum] = useState(false);
+
   // Edit Playlist State
   const [isEditPlaylistOpen, setIsEditPlaylistOpen] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -81,14 +91,37 @@ export default function Dashboard() {
 
   const fetchPlaylists = async () => {
     try {
-      const response = await api.get("/playlist");
-      const data = response.data;
-      setPlaylists(data);
-      if (data.length > 0 && !selectedPlaylist && !selectedAlbum && !searchResults) {
-        fetchPlaylistDetails(data[0].id);
+      const response = await api.get("/user");
+      const userData = response.data;
+      const role = String(userData.role || "").toLowerCase();
+
+      let items = [];
+      if (role === "artist") {
+        const albumRes = await api.get("/album/mine");
+        items = albumRes.data.map((a: any) => ({
+          ...a,
+          type: 'album'
+        }));
+      } else {
+        const playlistRes = await api.get("/playlist");
+        items = playlistRes.data.map((p: any) => ({
+          ...p,
+          type: 'playlist'
+        }));
+      }
+      
+      setPlaylists(items);
+      
+      // Auto-select first item if nothing selected
+      if (items.length > 0 && !selectedPlaylist && !selectedAlbum && !searchResults) {
+        if (items[0].type === 'album') {
+          fetchAlbumDetails(items[0].id);
+        } else {
+          fetchPlaylistDetails(items[0].id);
+        }
       }
     } catch (err) {
-      toast.error("Erro ao carregar playlists");
+      toast.error("Erro ao carregar sua biblioteca");
     } finally {
       setLoading(false);
     }
@@ -136,6 +169,101 @@ export default function Dashboard() {
       }
       setCreatePreviewUrl(url);
     }
+  };
+
+  const handleAlbumCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (file) {
+      setAlbumCoverFile(file);
+      const url = URL.createObjectURL(file);
+      if (albumCoverPreview && albumCoverPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(albumCoverPreview);
+      }
+      setAlbumCoverPreview(url);
+    }
+  };
+
+  const handleAddMusics = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      const newMusics = files.map(file => ({
+        file,
+        title: file.name.replace(/\.[^/.]+$/, "") // Default title to filename without extension
+      }));
+      setAlbumMusics(prev => [...prev, ...newMusics]);
+    }
+  };
+
+  const handleRemoveMusic = (index: number) => {
+    setAlbumMusics(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleMusicTitleChange = (index: number, title: string) => {
+    setAlbumMusics(prev => {
+      const copy = [...prev];
+      copy[index].title = title;
+      return copy;
+    });
+  };
+
+  const handleCreateAlbum = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!albumTitle.trim()) {
+      toast.error("O título do álbum é obrigatório");
+      return;
+    }
+    if (albumMusics.length === 0) {
+      toast.error("Adicione pelo menos uma música");
+      return;
+    }
+
+    try {
+      setIsSubmittingAlbum(true);
+      const formData = new FormData();
+      formData.append("title", albumTitle);
+      formData.append("description", albumDescription);
+      formData.append("releaseDate", albumReleaseDate);
+      if (albumCoverFile) {
+        formData.append("cover", albumCoverFile);
+      }
+
+      // Metadata for musics (titles and potentially collabs)
+      const musicsMetadata = albumMusics.map(m => ({ title: m.title }));
+      formData.append("musicsMetadata", JSON.stringify(musicsMetadata));
+
+      // Append each music file
+      albumMusics.forEach(m => {
+        formData.append("musics", m.file);
+      });
+
+      const response = await api.post("/album", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      toast.success("Álbum criado com sucesso!");
+      setIsCreateAlbumOpen(false);
+      resetAlbumForm();
+      
+      // Refresh list and select the new one
+      await fetchPlaylists();
+      fetchAlbumDetails(response.data.id);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Erro ao criar álbum");
+    } finally {
+      setIsSubmittingAlbum(false);
+    }
+  };
+
+  const resetAlbumForm = () => {
+    setAlbumTitle("");
+    setAlbumDescription("");
+    setAlbumReleaseDate("");
+    setAlbumCoverFile(null);
+    if (albumCoverPreview && albumCoverPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(albumCoverPreview);
+    }
+    setAlbumCoverPreview(null);
+    setAlbumMusics([]);
   };
 
   const handleUpdatePlaylist = async (e: React.FormEvent) => {
@@ -243,6 +371,17 @@ export default function Dashboard() {
       toast.error("Erro ao carregar detalhes do álbum");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSidebarSelect = (id: number) => {
+    const item = playlists.find(p => p.id === id);
+    if (!item) return;
+
+    if (item.type === 'album') {
+      fetchAlbumDetails(id);
+    } else {
+      fetchPlaylistDetails(id);
     }
   };
 
@@ -417,8 +556,10 @@ export default function Dashboard() {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar 
           playlists={playlists} 
-          onSelectPlaylist={fetchPlaylistDetails} 
+          onSelectPlaylist={handleSidebarSelect} 
           onOpenCreatePlaylist={() => setIsCreatePlaylistOpen(true)}
+          onOpenCreateAlbum={() => setIsCreateAlbumOpen(true)}
+          userRole={user?.role || user?.user?.role}
         />
         
         <div className="flex flex-col flex-1 relative overflow-hidden">
@@ -466,8 +607,9 @@ export default function Dashboard() {
                   title={selectedAlbum.title}
                   description={selectedAlbum.description}
                   coverUrl={selectedAlbum.coverUrl}
+                  owner={selectedAlbum.owner}
                   type="album"
-                  tracks={formatMusicData(selectedAlbum.musics || [], selectedAlbum.title)}
+                  tracks={formatMusicData(selectedAlbum.musics || [], selectedAlbum.title, selectedAlbum.owner)}
                   playlists={playlists}
                   onAddToPlaylist={handleAddToPlaylist}
                 />
@@ -503,7 +645,7 @@ export default function Dashboard() {
         onClose={() => setIsCreatePlaylistOpen(false)} 
         title="Criar Nova Playlist"
       >
-        <form onSubmit={handleCreatePlaylist} className="space-y-4">
+        <form onSubmit={handleCreatePlaylist} className="space-y-6">
           <div className="flex flex-col items-center gap-4">
             <div className="w-48 h-48 bg-gray-100 rounded-lg overflow-hidden shadow-md relative group border border-gray-100">
               {createPreviewUrl ? (
@@ -512,7 +654,7 @@ export default function Dashboard() {
                 <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm italic">Sem capa</div>
               )}
               <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                <span className="text-white text-xs font-bold uppercase tracking-wider">Alterar Foto</span>
+                <span className="text-white text-xs font-bold uppercase tracking-wider">Adicionar Capa</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -521,22 +663,26 @@ export default function Dashboard() {
                 />
               </label>
             </div>
-            <p className="text-xs text-gray-400">Clique na imagem para alterar a capa</p>
+            <p className="text-xs text-gray-400">Clique na imagem para adicionar uma capa</p>
           </div>
-          <Input 
-            label="Título"
-            placeholder="Minha Playlist Super Legal"
-            value={playlistTitle}
-            onChange={(e) => setPlaylistTitle(e.target.value)}
-            required
-          />
-          <Input 
-            label="Descrição (Opcional)"
-            placeholder="Uma playlist para relaxar..."
-            value={playlistDescription}
-            onChange={(e) => setPlaylistDescription(e.target.value)}
-          />
-          <div className="flex justify-end gap-3 pt-4">
+
+          <div className="space-y-4">
+            <Input 
+              label="Título"
+              placeholder="Minha Playlist #1"
+              value={playlistTitle}
+              onChange={(e) => setPlaylistTitle(e.target.value)}
+              required
+            />
+            <Input 
+              label="Descrição (Opcional)"
+              placeholder="Adicione uma descrição para sua playlist..."
+              value={playlistDescription}
+              onChange={(e) => setPlaylistDescription(e.target.value)}
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <Button 
               type="button" 
               variant="outline" 
@@ -550,6 +696,120 @@ export default function Dashboard() {
               disabled={isSubmittingPlaylist}
             >
               {isSubmittingPlaylist ? "Criando..." : "Criar Playlist"}
+            </Button>
+          </div>
+        </form>
+      </Dialog>
+
+      {/* Create Album Dialog */}
+      <Dialog 
+        isOpen={isCreateAlbumOpen} 
+        onClose={() => setIsCreateAlbumOpen(false)} 
+        title="Criar Novo Álbum"
+      >
+        <form onSubmit={handleCreateAlbum} className="space-y-4 max-h-[70vh] overflow-y-auto overflow-x-hidden pr-4 custom-scrollbar">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-48 h-48 bg-gray-100 rounded-lg overflow-hidden shadow-md relative group border border-gray-100">
+              {albumCoverPreview ? (
+                <img src={albumCoverPreview} alt="Preview" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm italic">Sem capa</div>
+              )}
+              <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                <span className="text-white text-xs font-bold uppercase tracking-wider">Alterar Capa</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAlbumCoverChange}
+                />
+              </label>
+            </div>
+            <p className="text-xs text-gray-400">Clique na imagem para alterar a capa do álbum</p>
+          </div>
+          
+          <Input 
+            label="Título do Álbum"
+            placeholder="Ex: Minha Obra Prima"
+            value={albumTitle}
+            onChange={(e) => setAlbumTitle(e.target.value)}
+            required
+          />
+          
+          <Input 
+            label="Descrição (Opcional)"
+            placeholder="Conte um pouco sobre este álbum..."
+            value={albumDescription}
+            onChange={(e) => setAlbumDescription(e.target.value)}
+          />
+
+          <Input 
+            label="Data de Lançamento"
+            type="date"
+            value={albumReleaseDate}
+            onChange={(e) => setAlbumReleaseDate(e.target.value)}
+            required
+          />
+
+          <div className="space-y-4 pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-sm uppercase tracking-wider text-gray-500">Músicas</h3>
+              <label className="text-xs bg-black text-white px-3 py-1.5 rounded-full font-bold cursor-pointer hover:bg-gray-800 transition-colors">
+                Adicionar Arquivos
+                <input 
+                  type="file" 
+                  multiple 
+                  accept="audio/*" 
+                  className="hidden" 
+                  onChange={handleAddMusics}
+                />
+              </label>
+            </div>
+
+            {albumMusics.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 text-gray-400 text-sm italic">
+                Nenhuma música adicionada ainda
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {albumMusics.map((music, index) => (
+                  <div key={index} className="bg-gray-50 p-3 rounded-lg flex flex-col gap-2 border border-gray-100 relative group">
+                    <button 
+                      type="button"
+                      onClick={() => handleRemoveMusic(index)}
+                      className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <Plus className="w-4 h-4 rotate-45" />
+                    </button>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase">Faixa #{index + 1}</span>
+                    <Input 
+                      placeholder="Nome da Música"
+                      value={music.title}
+                      onChange={(e) => handleMusicTitleChange(index, e.target.value)}
+                      className="h-8 text-xs"
+                      required
+                    />
+                    <span className="text-[10px] text-gray-400 truncate">{music.file.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 sticky bottom-0 bg-white pb-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setIsCreateAlbumOpen(false)}
+              disabled={isSubmittingAlbum}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isSubmittingAlbum}
+            >
+              {isSubmittingAlbum ? "Enviando..." : "Criar Álbum"}
             </Button>
           </div>
         </form>

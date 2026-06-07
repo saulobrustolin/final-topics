@@ -6,7 +6,8 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "typecheck": "react-router typegen && tsc",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@react-router/node": "7.15.1",
@@ -22,6 +23,7 @@
     "sonner": "^2.0.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@react-router/dev": "7.15.1",
     "@tailwindcss/vite": "^4.2.2",
     "@types/js-cookie": "^3.0.6",

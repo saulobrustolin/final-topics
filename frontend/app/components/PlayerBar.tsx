@@ -18,6 +18,9 @@ export function PlayerBar() {
     playPrevious 
   } = usePlayer();
 
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragTime, setDragTime] = React.useState(0);
+
   const formatTime = (time: number) => {
     if (!time || isNaN(time)) return "0:00";
     const mins = Math.floor(time / 60);
@@ -29,11 +32,22 @@ export function PlayerBar() {
     setVolume(parseFloat(e.target.value));
   };
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    seek(parseFloat(e.target.value));
+  const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseFloat(e.target.value);
+    setDragTime(val);
+    if (!isDragging) {
+      seek(val);
+    }
   };
 
-  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const handleMouseDown = () => setIsDragging(true);
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    seek(dragTime);
+  };
+
+  const displayTime = isDragging ? dragTime : currentTime;
+  const progressPercent = duration > 0 ? (displayTime / duration) * 100 : 0;
 
   return (
     <footer className="h-24 bg-white border-t border-gray-100 px-6 flex items-center justify-between sticky bottom-0 z-20 font-sans">
@@ -89,11 +103,11 @@ export function PlayerBar() {
         </div>
         
         <div className="w-full flex items-center gap-2 text-xs text-gray-400">
-          <span className="w-10 text-right">{formatTime(currentTime)}</span>
+          <span className="w-10 text-right">{formatTime(displayTime)}</span>
           <div className="flex-1 relative flex items-center h-4 group">
             <div className="absolute left-0 right-0 h-1 bg-gray-100 rounded-full pointer-events-none">
               <div 
-                className="absolute top-0 left-0 h-full bg-black rounded-full pointer-events-none transition-all duration-75 group-hover:bg-green-600"
+                className="absolute top-0 left-0 h-full bg-black rounded-full pointer-events-none group-hover:bg-green-600"
                 style={{ width: `${progressPercent}%` }}
               ></div>
             </div>
@@ -102,8 +116,12 @@ export function PlayerBar() {
               min="0" 
               max={duration || 0} 
               step="0.1"
-              value={currentTime} 
-              onChange={handleSeek}
+              value={displayTime} 
+              onChange={handleSeekChange}
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+              onTouchStart={handleMouseDown}
+              onTouchEnd={handleMouseUp}
               disabled={!currentTrack || duration === 0}
               className="w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
             />

@@ -7,4 +7,6 @@ export default [
   route("dashboard", "routes/dashboard.tsx"),
   // Handle and silence Chrome devtools background requests
   route(".well-known/appspecific/com.chrome.devtools.json", "routes/noop.tsx"),
+  // Catch-all route for unregistered paths
+  route("*", "routes/home.tsx", { id: "catch-all" }),
 ] satisfies RouteConfig;

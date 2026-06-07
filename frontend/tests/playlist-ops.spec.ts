@@ -1,0 +1,52 @@
+import { test, expect } from '@playwright/test';
+
+test.describe('Playlist Operations', () => {
+  test('should follow a playlist found in search', async ({ browser }) => {
+    const timestamp = Date.now();
+    const ownerEmail = `owner-${timestamp}@example.com`;
+    const followerEmail = `follower-${timestamp}@example.com`;
+    const password = 'Password123!';
+
+    // 1. Owner creates a public playlist
+    const ownerContext = await browser.newContext();
+    const ownerPage = await ownerContext.newPage();
+    await ownerPage.goto('http://localhost:5173/register');
+    await ownerPage.fill('input[name="name"]', 'Owner User');
+    await ownerPage.fill('input[name="email"]', ownerEmail);
+    await ownerPage.fill('input[name="password"]', password);
+    await ownerPage.selectOption('select[name="role"]', 'listener');
+    await ownerPage.click('button[type="submit"]');
+    await expect(ownerPage).toHaveURL(/.*dashboard/);
+
+    await ownerPage.click('button[title="Criar Playlist"]');
+    await ownerPage.getByLabel('Título').fill(`Public Playlist ${timestamp}`);
+    await ownerPage.click('button:has-text("Criar Playlist")');
+    await expect(ownerPage.locator('text=Playlist criada com sucesso!')).toBeVisible();
+    await ownerPage.close();
+
+    // 2. Follower searches and follows
+    const followerContext = await browser.newContext();
+    const followerPage = await followerContext.newPage();
+    await followerPage.goto('http://localhost:5173/register');
+    await followerPage.fill('input[name="name"]', 'Follower User');
+    await followerPage.fill('input[name="email"]', followerEmail);
+    await followerPage.fill('input[name="password"]', password);
+    await followerPage.selectOption('select[name="role"]', 'listener');
+    await followerPage.click('button[type="submit"]');
+    await expect(followerPage).toHaveURL(/.*dashboard/);
+
+    await followerPage.fill('input[placeholder*="O que você quer ouvir?"]', `Public Playlist ${timestamp}`);
+    await followerPage.keyboard.press('Enter');
+
+    await followerPage.click('button:has-text("Playlists (")');
+    const followBtn = followerPage.locator('button[title="Adicionar à biblioteca"]');
+    await followBtn.click();
+
+    await expect(followerPage.locator('text=Playlist adicionada à sua biblioteca!')).toBeVisible();
+    
+    // Check sidebar
+    await expect(followerPage.locator('aside')).toContainText(`Public Playlist ${timestamp}`);
+
+    await followerPage.close();
+  });
+});
