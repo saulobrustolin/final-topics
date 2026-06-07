@@ -24,7 +24,7 @@ app.get("/health", (req, res) => {
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/playlist", playlistRoutes);
-app.use("/api/v1/user", userRoutes); // Change to /user to match prompt "GET /" inside user
+app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/music", musicRoutes);
 app.use("/api/v1/album", albumRoutes);
 app.use("/api/v1/artist", artistRoutes);

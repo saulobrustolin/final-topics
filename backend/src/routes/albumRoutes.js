@@ -11,6 +11,20 @@ router.use(protect);
 
 /**
  * @swagger
+ * /album/mine:
+ *   get:
+ *     summary: List current artist's albums
+ *     tags: [Album]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of albums
+ */
+router.get("/mine", restrictTo(UserRole.ARTIST, UserRole.ADMIN), albumController.listMyAlbums);
+
+/**
+ * @swagger
  * /album:
  *   post:
  *     summary: Create a new album with musics

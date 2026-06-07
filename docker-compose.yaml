@@ -11,18 +11,6 @@ services:
     volumes:
       - pgdata_volume:/var/lib/postgresql
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin_gui
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: postgres
-    ports:
-      - "8080:80"
-    depends_on:
-      - db
-
   # SeaweedFS
   master:
     image: chrislusf/seaweedfs

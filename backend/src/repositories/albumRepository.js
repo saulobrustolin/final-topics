@@ -1,6 +1,6 @@
 import { Album } from "../models/Album.js";
 import { getRepository } from "../config/database.js";
-import { ILike } from "typeorm";
+import { ILike, LessThanOrEqual } from "typeorm";
 
 export async function getAlbumById(id) {
   return getRepository(Album).findOne({
@@ -32,7 +32,8 @@ export async function searchAlbums(q, page = 1, size = 10) {
   const skip = (page - 1) * size;
   return getRepository(Album).find({
     where: { 
-      title: q ? ILike(`%${q}%`) : undefined
+      title: q ? ILike(`%${q}%`) : undefined,
+      releaseDate: LessThanOrEqual(new Date())
     },
     relations: {
       user: true

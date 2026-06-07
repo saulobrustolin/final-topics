@@ -11,11 +11,26 @@ function parseId(idParam) {
 
 export async function getMe(req, res) {
   try {
-    const user = { ...req.user };
-    if (user.profile_url) {
-      user.profile_url = await S3Service.getPresignedUrl('profile', user.profile_url);
+    const user = req.user;
+    if (!user) {
+      return res.status(404).json({ message: "Usuário não encontrado" });
     }
-    return res.json(user);
+
+    const userData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      bio: user.bio,
+      profile_url: user.profile_url,
+      is_active: user.is_active
+    };
+
+    if (userData.profile_url) {
+      userData.profile_url = await S3Service.getPresignedUrl('profile', userData.profile_url);
+    }
+    
+    return res.json(userData);
   } catch (error) {
     return res.status(500).json({ message: req.__("errors.internal_server") });
   }

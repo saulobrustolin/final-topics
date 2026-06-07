@@ -11,7 +11,7 @@ function parseId(idParam) {
 
 export async function createAlbum(req, res) {
   try {
-    const { title, description, musicsMetadata } = req.body;
+    const { title, description, musicsMetadata, releaseDate } = req.body;
     let coverUrl = null;
 
     if (req.files['cover']) {
@@ -23,7 +23,7 @@ export async function createAlbum(req, res) {
     const musicFiles = req.files['musics'] || [];
     
     // musicsMetadata expected to be a JSON string if coming from multipart form
-    // it should contain an array of { collabs: [id1, id2] } corresponding to the musicFiles index
+    // it should contain an array of { title: "Song Name", collabs: [id1, id2] } corresponding to the musicFiles index
     let metadata = [];
     if (musicsMetadata) {
       try {
@@ -36,12 +36,22 @@ export async function createAlbum(req, res) {
     const result = await albumService.createAlbumWithMusics(req.user.id, {
       title,
       description,
-      coverUrl
+      coverUrl,
+      releaseDate
     }, musicFiles, metadata);
 
     return res.status(result.status).json(result.data);
   } catch (error) {
     return res.status(500).json({ message: req.__("errors.internal_server"), error: error.message });
+  }
+}
+
+export async function listMyAlbums(req, res) {
+  try {
+    const albums = await albumService.listAlbumsByArtist(req.user.id);
+    return res.json(albums.data);
+  } catch (error) {
+    return res.status(500).json({ message: req.__("errors.internal_server") });
   }
 }
 

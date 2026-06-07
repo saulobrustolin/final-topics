@@ -57,6 +57,19 @@ export async function findAlbumById(id) {
   return { data: responseData, status: 200 };
 }
 
+export async function listAlbumsByArtist(artistId) {
+  const albums = await albumRepository.listAlbumsByArtist(artistId);
+  const processed = [];
+  for (const album of albums) {
+    const a = { ...album };
+    if (a.coverUrl) {
+      a.coverUrl = await S3Service.getPresignedUrl('cover', a.coverUrl);
+    }
+    processed.push(a);
+  }
+  return { data: processed, status: 200 };
+}
+
 export async function createAlbumWithMusics(userId, albumData, files, metadata) {
   // 1. Create Album
   const album = await albumRepository.createAlbum({
@@ -64,7 +77,7 @@ export async function createAlbumWithMusics(userId, albumData, files, metadata) 
     description: albumData.description,
     coverUrl: albumData.coverUrl,
     userId: userId,
-    releaseDate: new Date()
+    releaseDate: albumData.releaseDate ? new Date(albumData.releaseDate) : new Date()
   });
 
   // 2. Upload and Create Musics
@@ -76,7 +89,7 @@ export async function createAlbumWithMusics(userId, albumData, files, metadata) 
       
       // First, create the music entry to get an ID
       let music = await musicRepository.createMusic({
-        title: file.originalname,
+        title: musicMeta.title || file.originalname,
         duration: 0, 
         audioUrl: 'pending', 
         coverUrl: albumData.coverUrl,

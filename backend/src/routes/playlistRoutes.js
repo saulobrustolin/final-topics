@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as playlistController from "../controllers/playlistController.js";
-import { protect } from "../middlewares/authMiddleware.js";
+import { protect, restrictTo } from "../middlewares/authMiddleware.js";
+import UserRole from "../models/enums/UserRole.js";
 import multer from "multer";
 
 const router = Router();
@@ -45,7 +46,7 @@ router.use(protect);
  *       200:
  *         description: List of playlists
  */
-router.post("/", upload.single('cover'), playlistController.createPlaylist);
+router.post("/", restrictTo(UserRole.LISTENER, UserRole.ADMIN), upload.single('cover'), playlistController.createPlaylist);
 router.get("/", playlistController.getPlaylists);
 
 /**
