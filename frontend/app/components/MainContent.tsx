@@ -14,9 +14,10 @@ interface MainContentProps {
   playlists?: { id: number; title: string }[];
   onAddToPlaylist?: (trackId: number, playlistId: number) => void;
   onEdit?: () => void;
+  isPrivate?: boolean;
 }
 
-export function MainContent({ title, description, coverUrl, owner, type, tracks, playlists = [], onAddToPlaylist, onEdit }: MainContentProps) {
+export function MainContent({ title, description, coverUrl, owner, type, tracks, playlists = [], onAddToPlaylist, onEdit, isPrivate }: MainContentProps) {
   const { playTrack, setQueue, currentTrack, isPlaying } = usePlayer();
   
   // Context Menu State
@@ -33,7 +34,7 @@ export function MainContent({ title, description, coverUrl, owner, type, tracks,
   };
 
   const getSubtitle = () => {
-    if (type === "playlist") return "Playlist Pública";
+    if (type === "playlist") return isPrivate ? "Playlist Privada" : "Playlist Pública";
     if (type === "search") return "Resultados da Busca";
     return "Álbum";
   };

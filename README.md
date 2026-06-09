@@ -2,7 +2,7 @@ As tecnologias utilizadas foram: Node.JS com Express (core) e TypeORM no backend
 
 Instalação e executação:
 
-* Antes de qualquer coisa será necessário instalar o Node.JS (recomendado a versão LTS mais recente) e também o Docker (recomendado a versão mais recente). Após isso, podemos seguir com o passo a passo.
+* Antes de qualquer coisa será necessário instalar o Node.JS (recomendado a versão LTS mais recente), o Docker (recomendado a versão mais recente) e também o FFmpeg. Após isso, podemos seguir com o passo a passo.
 
 1. ``git clone https://github.com/saulobrustolin/final-topics``
 2. ```cd ./final-topics``
@@ -14,7 +14,9 @@ Instalação e executação:
 8. Para buildar ambas a camadas será necessário acessar a pasta do ``/backend`` e ``/frontend`` e executar  ``npm run build``. Lembre-se que deve acessar e executar em ambas as pastas do projeto.
 9. Para executar deverá dar ``npm run start`` nas pastas ``/backend`` e ``/frontend``. Uma executação para cada terminal.
 * Para que a etapa 9 funcione, a etapa 8 precisa ser concluída.
+* Lembre-se que é necessário instalar o FFmpeg para funcionar.
 
 Execução de testes:
 1. Acesse o ```/frontend``
-2. Execute no terminal ``npm run test:e2e``
+2. Execute o ``npx playwright install chromium`` no terminal
+3. Execute no terminal ``npm run test:e2e``

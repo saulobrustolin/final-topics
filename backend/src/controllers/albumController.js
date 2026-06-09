@@ -22,8 +22,6 @@ export async function createAlbum(req, res) {
 
     const musicFiles = req.files['musics'] || [];
     
-    // musicsMetadata expected to be a JSON string if coming from multipart form
-    // it should contain an array of { title: "Song Name", collabs: [id1, id2] } corresponding to the musicFiles index
     let metadata = [];
     if (musicsMetadata) {
       try {
@@ -42,6 +40,7 @@ export async function createAlbum(req, res) {
 
     return res.status(result.status).json(result.data);
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ message: req.__("errors.internal_server"), error: error.message });
   }
 }

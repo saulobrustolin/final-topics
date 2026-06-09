@@ -54,6 +54,7 @@ export default function Dashboard() {
   const [playlistFile, setPlaylistFile] = useState<File | null>(null);
   const [isSubmittingPlaylist, setIsSubmittingPlaylist] = useState(false);
   const [createPreviewUrl, setCreatePreviewUrl] = useState<string | null>(null);
+  const [playlistIsPrivate, setPlaylistIsPrivate] = useState(false);
 
   // Create Album State
   const [isCreateAlbumOpen, setIsCreateAlbumOpen] = useState(false);
@@ -72,6 +73,7 @@ export default function Dashboard() {
   const [editFile, setEditFile] = useState<File | null>(null);
   const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
   const [isUpdatingPlaylist, setIsSubmittingUpdate] = useState(false);
+  const [editIsPrivate, setEditIsPrivate] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -133,6 +135,7 @@ export default function Dashboard() {
     setEditDescription(selectedPlaylist.description || "");
     setEditFile(null);
     setEditPreviewUrl(selectedPlaylist.coverUrl || null);
+    setEditIsPrivate(selectedPlaylist.isPrivate || false);
     setIsEditPlaylistOpen(true);
   };
 
@@ -145,6 +148,7 @@ export default function Dashboard() {
     setEditDescription("");
     setEditFile(null);
     setEditPreviewUrl(null);
+    setEditIsPrivate(false);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -278,6 +282,7 @@ export default function Dashboard() {
       const formData = new FormData();
       formData.append("title", editTitle);
       formData.append("description", editDescription);
+      formData.append("isPrivate", String(editIsPrivate));
       if (editFile) {
         formData.append("cover", editFile);
       }
@@ -293,6 +298,7 @@ export default function Dashboard() {
       setIsEditPlaylistOpen(false);
       setEditPreviewUrl(null);
       setEditFile(null);
+      setEditIsPrivate(false);
       
       // Preserve existing musics while updating other metadata
       setSelectedPlaylist({
@@ -321,6 +327,7 @@ export default function Dashboard() {
       const formData = new FormData();
       formData.append("title", playlistTitle);
       formData.append("description", playlistDescription);
+      formData.append("isPrivate", String(playlistIsPrivate));
       if (playlistFile) {
         formData.append("cover", playlistFile);
       }
@@ -338,6 +345,7 @@ export default function Dashboard() {
       setPlaylistDescription("");
       setPlaylistFile(null);
       setCreatePreviewUrl(null);
+      setPlaylistIsPrivate(false);
       
       // Refresh list and select the new one
       await fetchPlaylists();
@@ -626,6 +634,7 @@ export default function Dashboard() {
                   playlists={playlists}
                   onAddToPlaylist={handleAddToPlaylist}
                   onEdit={selectedPlaylist.userId === user?.id ? handleOpenEditPlaylist : undefined}
+                  isPrivate={selectedPlaylist.isPrivate}
                 />
               </div>
             ) : (
@@ -680,6 +689,19 @@ export default function Dashboard() {
               value={playlistDescription}
               onChange={(e) => setPlaylistDescription(e.target.value)}
             />
+            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-all cursor-pointer">
+              <input 
+                type="checkbox" 
+                id="create-playlist-private"
+                checked={playlistIsPrivate} 
+                onChange={(e) => setPlaylistIsPrivate(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-gray-300 text-black focus:ring-black cursor-pointer" 
+              />
+              <label htmlFor="create-playlist-private" className="flex flex-col cursor-pointer select-none">
+                <span className="text-sm font-semibold text-black">Playlist Privada</span>
+                <span className="text-xs text-gray-500">Apenas você poderá ver e ouvir esta playlist</span>
+              </label>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
@@ -855,6 +877,19 @@ export default function Dashboard() {
               onChange={(e) => setEditDescription(e.target.value)}
               placeholder="Adicione uma descrição opcional..."
             />
+            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-all cursor-pointer">
+              <input 
+                type="checkbox" 
+                id="edit-playlist-private"
+                checked={editIsPrivate} 
+                onChange={(e) => setEditIsPrivate(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-gray-300 text-black focus:ring-black cursor-pointer" 
+              />
+              <label htmlFor="edit-playlist-private" className="flex flex-col cursor-pointer select-none">
+                <span className="text-sm font-semibold text-black">Playlist Privada</span>
+                <span className="text-xs text-gray-500">Apenas você poderá ver e ouvir esta playlist</span>
+              </label>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-50">

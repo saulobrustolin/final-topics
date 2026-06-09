@@ -18,10 +18,12 @@ export async function createPlaylist(req, res) {
       coverUrl = await S3Service.uploadFile(req.file, 'cover', key);
     }
 
-    const playlist = await playlistService.createPlaylist(req.user.id, {
-      ...req.body,
-      coverUrl
-    });
+    const playlistData = { ...req.body, coverUrl };
+    if (playlistData.isPrivate !== undefined) {
+      playlistData.isPrivate = playlistData.isPrivate === 'true' || playlistData.isPrivate === true;
+    }
+
+    const playlist = await playlistService.createPlaylist(req.user.id, playlistData);
     return res.status(201).json(playlist);
   } catch (error) {
     return res.status(500).json({ message: req.__("errors.internal_server"), error: error.message });
@@ -70,6 +72,9 @@ export async function updatePlaylist(req, res) {
 
     const updateData = { ...req.body };
     if (coverUrl) updateData.coverUrl = coverUrl;
+    if (updateData.isPrivate !== undefined) {
+      updateData.isPrivate = updateData.isPrivate === 'true' || updateData.isPrivate === true;
+    }
 
     const result = await playlistService.updatePlaylist(id, req.user.id, updateData);
     if (result.errorKey) {

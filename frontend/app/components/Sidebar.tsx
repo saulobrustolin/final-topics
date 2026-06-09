@@ -71,7 +71,7 @@ export function Sidebar({ playlists, onSelectPlaylist, onOpenCreatePlaylist, onO
                 <div className="flex flex-col min-w-0">
                   <span className="text-sm font-semibold truncate text-black">{item.title}</span>
                   <span className="text-xs text-gray-500">
-                    {item.type === 'album' ? 'Álbum' : 'Playlist'} • {isArtist ? 'Criado por você' : 'Sua Biblioteca'}
+                    {item.type === 'album' ? 'Álbum' : (item.isPrivate ? 'Playlist Privada' : 'Playlist Pública')} • {isArtist ? 'Criado por você' : 'Sua Biblioteca'}
                   </span>
                 </div>
               </button>
