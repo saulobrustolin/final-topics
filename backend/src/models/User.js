@@ -45,12 +45,6 @@ class User {
   bio;
 
   @Column({
-    type: "text",
-    nullable: true
-  })
-  profile_url;
-
-  @Column({
     type: "boolean",
     default: true
   })

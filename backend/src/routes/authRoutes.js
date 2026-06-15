@@ -3,7 +3,6 @@ import * as authController from "../controllers/authController.js";
 import multer from "multer";
 
 const router = Router();
-const upload = multer();
 
 /**
  * @swagger
@@ -37,7 +36,7 @@ const upload = multer();
  *       400:
  *         description: Email already registered
  */
-router.post('/register', upload.single('profile_photo'), authController.register);
+router.post('/register', authController.register);
 
 /**
  * @swagger

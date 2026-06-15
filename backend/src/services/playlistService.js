@@ -110,7 +110,6 @@ export async function addMusic(playlistId, userId, musicId) {
     return { errorKey: "errors.playlist_not_found", status: 404 };
   }
 
-  // RN02 Usuário não pode adicionar músicas em playlists de outros usuários
   if (playlist.userId !== userId) {
     return { errorKey: "errors.forbidden", status: 403 };
   }

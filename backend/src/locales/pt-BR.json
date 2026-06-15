@@ -1,16 +1,16 @@
 {
   "errors": {
-    "route_not_found": "rota nao encontrada",
-    "internal_server": "erro interno do servidor",
-    "invalid_id": "id invalido",
-    "invalid_payload": "dados invalidos",
-    "user_not_found": "usuario nao encontrado",
-    "forbidden": "acesso negado",
-    "playlist_not_found": "playlist nao encontrada",
-    "music_not_found": "musica nao encontrada",
-    "album_not_found": "album nao encontrado",
-    "artist_not_found": "artista nao encontrado",
-    "music_already_in_playlist": "musica ja esta na playlist",
-    "music_not_in_playlist": "musica nao esta na playlist"
+    "route_not_found": "Rota não encontrada",
+    "internal_server": "Erro interno do servidor",
+    "invalid_id": "ID inválido",
+    "invalid_payload": "Dados inválidos",
+    "user_not_found": "Usuário não encontrado",
+    "forbidden": "Acesso negado",
+    "playlist_not_found": "Playlist não encontrada",
+    "music_not_found": "Música não encontrada",
+    "album_not_found": "Álbum não encontrado",
+    "artist_not_found": "Artista não encontrado",
+    "music_already_in_playlist": "Música já está na playlist",
+    "music_not_in_playlist": "Música não está na playlist"
   }
 }

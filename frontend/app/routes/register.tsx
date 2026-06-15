@@ -10,7 +10,7 @@ import type { Route } from "./+types/register";
 
 export function meta() {
   return [
-    { title: "Cadastro - Music Platform" },
+    { title: "music plataform | register" },
   ];
 }
 
@@ -23,11 +23,14 @@ export function clientLoader() {
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
   const formData = await request.formData();
+  if (formData.get("password") != formData.get("confirmPassword")) {
+    return { error: "As senhas não são iguais" }
+  }
 
   try {
     const response = await api.post("/auth/register", formData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        "Content-Type": "application/json",
       },
     });
 
@@ -63,53 +66,53 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12 font-sans">
       <Card className="w-full max-w-md border-0 sm:border">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-3xl text-center">Criar Conta</CardTitle>
+          <CardTitle className="text-3xl text-center">Criar conta</CardTitle>
           <CardDescription className="text-center">
             Preencha os dados abaixo para se cadastrar na plataforma
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form method="post" encType="multipart/form-data" className="space-y-4">
+          <Form method="post" className="space-y-4">
             <Input
-              label="Nome Completo"
+              label="Nome completo"
               type="text"
-              placeholder="Seu nome"
+              placeholder="Digite seu nome completo"
               required
               name="name"
             />
             <Input
-              label="Email"
+              label="E-mail"
               type="email"
-              placeholder="exemplo@email.com"
+              placeholder="Digite seu e-mail"
               required
               name="email"
             />
             <Input
               label="Senha"
               type="password"
-              placeholder="••••••••"
+              placeholder="Digite sua senha"
               required
               name="password"
             />
+            <Input
+              label="Confirmação de senha"
+              type="password"
+              placeholder="Digite sua senha novamente"
+              required
+              name="confirmPassword"
+            />
             <div className="space-y-1.5">
-              <label className="text-sm font-medium leading-none">Tipo de Conta</label>
-              <select 
-                name="role" 
-                className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                defaultValue="listener"
-              >
-                <option value="listener">Ouvinte</option>
-                <option value="artist">Artista</option>
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium leading-none">Foto de Perfil (Opcional)</label>
-              <input
-                type="file"
-                name="profile_photo"
-                accept="image/*"
-                className="flex w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 cursor-pointer"
-              />
+              <label className="text-sm font-medium leading-none">Tipo de conta</label>
+              <div className="flex gap-2 justify-start items-center">
+                <div>
+                  <input type="radio" name="role" id="listener" value="listener" defaultChecked />
+                  <label htmlFor="listener">Ouvinte</label>
+                </div>
+                <div>
+                  <input type="radio" name="role" id="artist" value="artist" />
+                  <label htmlFor="artist">Artista</label>
+                </div>
+              </div>
             </div>
             <Button type="submit" className="w-full mt-2" disabled={isSubmitting}>
               {isSubmitting ? "Cadastrando..." : "Cadastrar"}

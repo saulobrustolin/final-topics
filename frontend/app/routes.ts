@@ -1,12 +1,10 @@
 import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
-  index("routes/home.tsx"),
+  index("routes/dashboard.tsx", { id: "dashboard-index" }),
   route("login", "routes/login.tsx"),
   route("register", "routes/register.tsx"),
   route("dashboard", "routes/dashboard.tsx"),
-  // Handle and silence Chrome devtools background requests
   route(".well-known/appspecific/com.chrome.devtools.json", "routes/noop.tsx"),
-  // Catch-all route for unregistered paths
-  route("*", "routes/home.tsx", { id: "catch-all" }),
+  route("*", "routes/home.tsx"),
 ] satisfies RouteConfig;

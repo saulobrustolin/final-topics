@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Trash } from "lucide-react";
 
 interface ContextMenuProps {
   x: number;
@@ -24,7 +24,6 @@ export function ContextMenu({ x, y, onClose, playlists, onAddToPlaylist }: Conte
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
-  // Adjust position if menu goes off screen
   const [adjustedX, setAdjustedX] = useState(x);
   const [adjustedY, setAdjustedY] = useState(y);
 
@@ -49,12 +48,12 @@ export function ContextMenu({ x, y, onClose, playlists, onAddToPlaylist }: Conte
   }, [x, y]);
 
   return (
-    <div 
+    <div
       ref={menuRef}
       className="fixed z-50 bg-white border border-gray-100 shadow-xl rounded-lg py-1 w-56 animate-in fade-in zoom-in-95 duration-100 font-sans"
       style={{ top: adjustedY, left: adjustedX }}
     >
-      <div 
+      <div
         className="relative group"
         onMouseEnter={() => setShowSubmenu(true)}
         onMouseLeave={() => setShowSubmenu(false)}
@@ -65,7 +64,7 @@ export function ContextMenu({ x, y, onClose, playlists, onAddToPlaylist }: Conte
         </button>
 
         {showSubmenu && (
-          <div 
+          <div
             ref={submenuRef}
             className="absolute left-full top-0 ml-px bg-white border border-gray-100 shadow-xl rounded-lg py-1 w-56 animate-in fade-in slide-in-from-left-2 duration-100"
           >

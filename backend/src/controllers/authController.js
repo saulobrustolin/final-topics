@@ -18,12 +18,6 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'Este e-mail já está cadastrado.' });
     }
 
-    let profile_url = null;
-    if (req.file) {
-      const key = `profile-${Date.now()}-${req.file.originalname}`;
-      profile_url = await S3Service.uploadFile(req.file, 'profile', key);
-    }
-
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -31,8 +25,7 @@ export const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: role || 'listener',
-      profile_url
+      role: role || 'listener'
     });
 
     return res.status(201).json({

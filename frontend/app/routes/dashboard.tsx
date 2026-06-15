@@ -39,15 +39,36 @@ interface PlaylistResult {
   coverUrl?: string;
 }
 
+export interface Playlist {
+  coverUrl: string,
+  createdAt: String,
+  description: string,
+  id: number,
+  title: string,
+  isPrivate: boolean,
+  owner: string,
+  type: string,
+  updatedAt: string,
+  userId: number
+}
+
+interface User {
+  bio?: string,
+  email: string,
+  id: number,
+  is_active: boolean,
+  name: String,
+  role: "listener" | "admin" | "artist"
+}
+
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
-  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState<any>(null);
   const [selectedAlbum, setSelectedAlbum] = useState<any>(null);
   const [searchResults, setSearchResults] = useState<{ tracks: Music[], albums: AlbumResult[], playlists: PlaylistResult[], query: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Create Playlist State
   const [isCreatePlaylistOpen, setIsCreatePlaylistOpen] = useState(false);
   const [playlistTitle, setPlaylistTitle] = useState("");
   const [playlistDescription, setPlaylistDescription] = useState("");
@@ -56,7 +77,6 @@ export default function Dashboard() {
   const [createPreviewUrl, setCreatePreviewUrl] = useState<string | null>(null);
   const [playlistIsPrivate, setPlaylistIsPrivate] = useState(false);
 
-  // Create Album State
   const [isCreateAlbumOpen, setIsCreateAlbumOpen] = useState(false);
   const [albumTitle, setAlbumTitle] = useState("");
   const [albumDescription, setAlbumDescription] = useState("");
@@ -66,7 +86,6 @@ export default function Dashboard() {
   const [albumMusics, setAlbumMusics] = useState<{ file: File; title: string }[]>([]);
   const [isSubmittingAlbum, setIsSubmittingAlbum] = useState(false);
 
-  // Edit Playlist State
   const [isEditPlaylistOpen, setIsEditPlaylistOpen] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -96,6 +115,7 @@ export default function Dashboard() {
       const response = await api.get("/user");
       const userData = response.data;
       const role = String(userData.role || "").toLowerCase();
+      console.log(userData);
 
       let items = [];
       if (role === "artist") {
@@ -114,7 +134,6 @@ export default function Dashboard() {
       
       setPlaylists(items);
       
-      // Auto-select first item if nothing selected
       if (items.length > 0 && !selectedPlaylist && !selectedAlbum && !searchResults) {
         if (items[0].type === 'album') {
           fetchAlbumDetails(items[0].id);
@@ -192,7 +211,7 @@ export default function Dashboard() {
     if (files.length > 0) {
       const newMusics = files.map(file => ({
         file,
-        title: file.name.replace(/\.[^/.]+$/, "") // Default title to filename without extension
+        title: file.name.replace(/\.[^/.]+$/, "")
       }));
       setAlbumMusics(prev => [...prev, ...newMusics]);
     }
@@ -231,11 +250,9 @@ export default function Dashboard() {
         formData.append("cover", albumCoverFile);
       }
 
-      // Metadata for musics (titles and potentially collabs)
       const musicsMetadata = albumMusics.map(m => ({ title: m.title }));
       formData.append("musicsMetadata", JSON.stringify(musicsMetadata));
 
-      // Append each music file
       albumMusics.forEach(m => {
         formData.append("musics", m.file);
       });
@@ -248,7 +265,6 @@ export default function Dashboard() {
       setIsCreateAlbumOpen(false);
       resetAlbumForm();
       
-      // Refresh list and select the new one
       await fetchPlaylists();
       fetchAlbumDetails(response.data.id);
     } catch (err: any) {
@@ -300,13 +316,11 @@ export default function Dashboard() {
       setEditFile(null);
       setEditIsPrivate(false);
       
-      // Preserve existing musics while updating other metadata
       setSelectedPlaylist({
         ...response.data,
         musics: selectedPlaylist.musics
       });
 
-      // Refresh sidebar list
       fetchPlaylists();
     } catch (err) {
       toast.error("Erro ao atualizar playlist");
@@ -347,7 +361,6 @@ export default function Dashboard() {
       setCreatePreviewUrl(null);
       setPlaylistIsPrivate(false);
       
-      // Refresh list and select the new one
       await fetchPlaylists();
       fetchPlaylistDetails(response.data.id);
     } catch (err) {
@@ -362,7 +375,7 @@ export default function Dashboard() {
       const response = await api.get(`/playlist/${id}`);
       setSelectedPlaylist(response.data);
       setSelectedAlbum(null);
-      setSearchResults(null); // Clear search when a playlist is selected
+      setSearchResults(null);
     } catch (err) {
       toast.error("Erro ao carregar detalhes da playlist");
     }
@@ -403,7 +416,6 @@ export default function Dashboard() {
       const response = await api.get(`/search?q=${encodeURIComponent(query)}`);
       const data = response.data;
       
-      // Map backend search results to Music interface
       const tracks: Music[] = (data.musics || []).map((m: any) => ({
         id: m.id,
         title: m.name,
@@ -413,7 +425,6 @@ export default function Dashboard() {
         albumName: m.albumName || "Desconhecido"
       }));
 
-      // Map backend search results to AlbumResult interface
       const albums: AlbumResult[] = (data.albuns || []).map((a: any) => ({
         id: a.id,
         name: a.name,
@@ -422,7 +433,6 @@ export default function Dashboard() {
         albumUrl: a.albumUrl
       }));
 
-      // Map backend search results to PlaylistResult interface
       const playlistsResults: PlaylistResult[] = (data.playlists || []).map((p: any) => ({
         id: p.id,
         name: p.name,
@@ -452,7 +462,7 @@ export default function Dashboard() {
 
   const formatMusicData = (musics: any[], defaultAlbumName?: string, defaultArtist?: string): Music[] => {
     return musics.map((pm: any) => {
-      const musicObj = pm.music || pm; // handles both playlist (pm.music) and album/search (pm)
+      const musicObj = pm.music || pm;
       
       const artists = musicObj.artists?.map((a: any) => typeof a === 'string' ? a : a.name);
       const finalArtists = artists && artists.length > 0 ? artists : [musicObj.owner || defaultArtist || "Unknown Artist"];
@@ -503,7 +513,7 @@ export default function Dashboard() {
                     <img src={playlist.coverUrl} alt={playlist.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300">
-                       <Plus className="w-6 h-6 rotate-45" /> {/* placeholder icon */}
+                       <Plus className="w-6 h-6 rotate-45" />
                     </div>
                   )}
                 </div>
@@ -631,7 +641,7 @@ export default function Dashboard() {
                   owner={selectedPlaylist.owner}
                   type="playlist"
                   tracks={formatMusicData(selectedPlaylist.musics || [])}
-                  playlists={playlists}
+                  playlists={playlists.filter(p => p.userId == user.id)}
                   onAddToPlaylist={handleAddToPlaylist}
                   onEdit={selectedPlaylist.userId === user?.id ? handleOpenEditPlaylist : undefined}
                   isPrivate={selectedPlaylist.isPrivate}
@@ -648,7 +658,6 @@ export default function Dashboard() {
       
       <PlayerBar />
 
-      {/* Create Playlist Dialog */}
       <Dialog 
         isOpen={isCreatePlaylistOpen} 
         onClose={() => setIsCreatePlaylistOpen(false)} 
@@ -723,7 +732,6 @@ export default function Dashboard() {
         </form>
       </Dialog>
 
-      {/* Create Album Dialog */}
       <Dialog 
         isOpen={isCreateAlbumOpen} 
         onClose={() => setIsCreateAlbumOpen(false)} 
@@ -837,7 +845,6 @@ export default function Dashboard() {
         </form>
       </Dialog>
 
-      {/* Edit Playlist Dialog */}
       <Dialog 
         isOpen={isEditPlaylistOpen} 
         onClose={handleCancelEdit} 

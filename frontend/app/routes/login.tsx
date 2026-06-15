@@ -10,7 +10,7 @@ import type { Route } from "./+types/login";
 
 export function meta() {
   return [
-    { title: "Login - Music Platform" },
+    { title: "music plataform | login" },
   ];
 }
 
@@ -53,7 +53,7 @@ export default function Login() {
       toast.success("Login efetuado com sucesso!", {
         description: "Redirecionando..."
       });
-      // Redirect handled via client-side router or window.location
+
       window.location.href = "/dashboard";
     }
   }, [actionData]);
@@ -72,7 +72,7 @@ export default function Login() {
             <Input
               label="Email"
               type="email"
-              placeholder="exemplo@email.com"
+              placeholder="Digite seu e-mail"
               required
               name="email"
             />
@@ -88,7 +88,7 @@ export default function Login() {
               </div>
               <Input
                 type="password"
-                placeholder="••••••••"
+                placeholder="Digite sua senha"
                 required
                 name="password"
               />

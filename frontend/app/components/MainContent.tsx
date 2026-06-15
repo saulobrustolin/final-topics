@@ -3,6 +3,7 @@ import { Clock3, Pin } from "lucide-react";
 import { usePlayer, type Music } from "../contexts/PlayerContext";
 import { ContextMenu } from "./ContextMenu";
 import { Button } from "./Button";
+import type { Playlist } from "~/routes/dashboard";
 
 interface MainContentProps {
   title: string;
@@ -11,7 +12,7 @@ interface MainContentProps {
   owner?: string;
   type: "playlist" | "album" | "search";
   tracks: Music[];
-  playlists?: { id: number; title: string }[];
+  playlists?: Playlist[];
   onAddToPlaylist?: (trackId: number, playlistId: number) => void;
   onEdit?: () => void;
   isPrivate?: boolean;
@@ -20,7 +21,6 @@ interface MainContentProps {
 export function MainContent({ title, description, coverUrl, owner, type, tracks, playlists = [], onAddToPlaylist, onEdit, isPrivate }: MainContentProps) {
   const { playTrack, setQueue, currentTrack, isPlaying } = usePlayer();
   
-  // Context Menu State
   const [menuConfig, setMenuConfig] = useState<{ x: number, y: number, trackId: number } | null>(null);
 
   const handlePlayTrack = (track: Music) => {
@@ -147,7 +147,7 @@ export function MainContent({ title, description, coverUrl, owner, type, tracks,
         <ContextMenu 
           x={menuConfig.x}
           y={menuConfig.y}
-          playlists={playlists}
+          playlists={playlists.filter(p => ({ id: p.id, title: p.title }))}
           onClose={() => setMenuConfig(null)}
           onAddToPlaylist={(playlistId) => onAddToPlaylist?.(menuConfig.trackId, playlistId)}
         />
