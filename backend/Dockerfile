@@ -1,4 +1,4 @@
-FROM node:20-alpine AS development-dependencies-env
+FROM node:20-alpine AS dependencies-env
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
@@ -10,18 +10,18 @@ RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
 
 FROM node:20-alpine AS build-env
 WORKDIR /app
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
-COPY package.json package-lock.json ./
-COPY --from=development-dependencies-env /app/node_modules ./node_modules
-COPY . .
+COPY package.json package-lock.json babel.config.json ./
+COPY --from=dependencies-env /app/node_modules ./node_modules
+COPY src ./src
 RUN npm run build
 
 FROM node:20-alpine
+
+RUN apk add --no-cache ffmpeg
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package.json package-lock.json ./
 COPY --from=production-dependencies-env /app/node_modules ./node_modules
-COPY --from=build-env /app/build ./build
-EXPOSE 3000
-CMD ["npm", "run", "start"]
+COPY --from=build-env /app/dist ./dist
+EXPOSE 3001
+CMD ["node", "dist/server.js"]

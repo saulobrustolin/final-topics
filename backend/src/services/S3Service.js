@@ -11,7 +11,7 @@ const s3Client = new S3Client({
     accessKeyId: process.env.S3_ACCESS_KEY || "any",
     secretAccessKey: process.env.S3_SECRET_KEY || "any",
   },
-  forcePathStyle: true, // Required for SeaweedFS
+  forcePathStyle: true,
 });
 
 const ensureBucketExists = async (bucketName) => {
@@ -48,8 +48,10 @@ export async function getPresignedUrl(bucket, key) {
     Key: key,
   });
 
-  // URL valid for 1 hour
-  return getSignedUrl(s3Client, command, { expiresIn: 3600 });
+  let url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+  url = url.replace("filer", "localhost");
+
+  return url;
 }
 
 export async function getFileStream(bucket, key) {

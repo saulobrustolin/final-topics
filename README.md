@@ -9,12 +9,7 @@ Instalação e executação:
 3. ``cd ./frontend && npm i && cd ..``
 4. ``cd ./backend && npm i && cd ..``
 5. ``docker compose up -d``
-6. Faça uma copia do ``.env.example`` na mesma camada da estrutura de pastas e renomeie para ``.env``
-7. Caso a porta 5433 esteja ocupada, será necessário alterar em ``docker-compose.yaml`` e também no ``.env`` do projeto, para assim conseguir criar o container em uma porta livre e sincronizar com o pg driver (utilizado para conectar no banco de dados).
-8. Para buildar ambas a camadas será necessário acessar a pasta do ``/backend`` e ``/frontend`` e executar  ``npm run build``. Lembre-se que deve acessar e executar em ambas as pastas do projeto.
-9. Para executar deverá dar ``npm run start`` nas pastas ``/backend`` e ``/frontend``. Uma executação para cada terminal.
-* Para que a etapa 9 funcione, a etapa 8 precisa ser concluída.
-* Lembre-se que é necessário instalar o FFmpeg para funcionar.
+6. Pronto, projeto rodando em http://localhost:80
 
 Execução de testes:
 1. Acesse o ```/frontend``
