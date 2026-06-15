@@ -77,15 +77,6 @@ export default function Login() {
               name="email"
             />
             <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium leading-none">Senha</label>
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-gray-500 hover:text-black transition-colors"
-                >
-                  Esqueceu a senha?
-                </Link>
-              </div>
               <Input
                 type="password"
                 placeholder="Digite sua senha"
