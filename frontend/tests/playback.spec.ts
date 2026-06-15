@@ -17,12 +17,10 @@ test.describe('Playback and Player', () => {
     await expect(playerBar).toBeVisible();
     await expect(playerBar.locator('text=Nenhuma música tocando')).toBeVisible();
 
-    // Mute toggle - finding the button that has a volume icon
     const volumeBtn = playerBar.locator('button').filter({ has: page.locator('svg[class*="lucide-volume"]') });
     await expect(volumeBtn).toBeVisible();
     await volumeBtn.click();
     
-    // Check if it toggled (look for any volume icon, but specifically lucide-volume-x is the muted one)
     await expect(playerBar.locator('svg[class*="lucide-volume-x"]')).toBeVisible();
   });
 });

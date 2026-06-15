@@ -6,7 +6,6 @@ test.describe('Playlist CRUD', () => {
     const email = `playlist-test-${timestamp}@example.com`;
     const password = 'Password123!';
 
-    // Register and login as listener (to see the + button)
     await page.goto('/register');
     await page.fill('input[name="name"]', 'Playlist User');
     await page.fill('input[name="email"]', email);
@@ -15,12 +14,10 @@ test.describe('Playlist CRUD', () => {
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/.*dashboard/);
 
-    // Create
     const createBtn = page.locator('button[title="Criar Playlist"]');
     await expect(createBtn).toBeVisible();
     await createBtn.click();
 
-    // The dialog should be open now
     await page.getByLabel('Título').fill(`E2E Playlist ${timestamp}`);
     await page.getByLabel('Descrição (Opcional)').fill('E2E Description');
     await page.click('button:has-text("Criar Playlist")');
@@ -28,10 +25,8 @@ test.describe('Playlist CRUD', () => {
     await expect(page.locator('text=Playlist criada com sucesso!')).toBeVisible();
     await expect(page.locator('aside')).toContainText(`E2E Playlist ${timestamp}`);
 
-    // Select it
     await page.locator('aside').getByText(`E2E Playlist ${timestamp}`).click();
 
-    // Edit
     await page.click('button:has-text("Editar")');
     await page.getByLabel('Título').fill(`Updated Playlist ${timestamp}`);
     await page.click('button:has-text("Salvar")');

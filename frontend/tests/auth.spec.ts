@@ -21,7 +21,6 @@ test.describe('Authentication', () => {
     const email = `test-login-${timestamp}@example.com`;
     const password = 'Password123!';
 
-    // Register first
     await page.goto('/register');
     await page.fill('input[name="name"]', 'Login User');
     await page.fill('input[name="email"]', email);
@@ -29,12 +28,10 @@ test.describe('Authentication', () => {
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/.*dashboard/);
 
-    // Logout
     await page.click('button:has(svg.lucide-user)');
     await page.click('text=Sair da conta');
     await expect(page).toHaveURL(/.*login/);
 
-    // Login
     await page.fill('input[name="email"]', email);
     await page.fill('input[name="password"]', password);
     await page.click('button[type="submit"]');
@@ -48,7 +45,6 @@ test.describe('Authentication', () => {
     await page.fill('input[name="password"]', 'WrongPassword');
     await page.click('button[type="submit"]');
 
-    // Sonner usually puts text in a div or span
     await expect(page.locator('text=Verifique suas credenciais')).toBeVisible();
   });
 });

@@ -7,7 +7,6 @@ test.describe('Playlist Operations', () => {
     const followerEmail = `follower-${timestamp}@example.com`;
     const password = 'Password123!';
 
-    // 1. Owner creates a public playlist
     const ownerContext = await browser.newContext();
     const ownerPage = await ownerContext.newPage();
     await ownerPage.goto('http://localhost:5173/register');
@@ -24,7 +23,6 @@ test.describe('Playlist Operations', () => {
     await expect(ownerPage.locator('text=Playlist criada com sucesso!')).toBeVisible();
     await ownerPage.close();
 
-    // 2. Follower searches and follows
     const followerContext = await browser.newContext();
     const followerPage = await followerContext.newPage();
     await followerPage.goto('http://localhost:5173/register');
@@ -44,7 +42,6 @@ test.describe('Playlist Operations', () => {
 
     await expect(followerPage.locator('text=Playlist adicionada à sua biblioteca!')).toBeVisible();
     
-    // Check sidebar
     await expect(followerPage.locator('aside')).toContainText(`Public Playlist ${timestamp}`);
 
     await followerPage.close();
@@ -56,7 +53,6 @@ test.describe('Playlist Operations', () => {
     const searcherEmail = `searcher-priv-${timestamp}@example.com`;
     const password = 'Password123!';
 
-    // 1. Owner creates a private playlist
     const ownerContext = await browser.newContext();
     const ownerPage = await ownerContext.newPage();
     await ownerPage.goto('http://localhost:5173/register');
@@ -70,14 +66,12 @@ test.describe('Playlist Operations', () => {
     await ownerPage.click('button[title="Criar Playlist"]');
     await ownerPage.getByLabel('Título').fill(`Private Playlist ${timestamp}`);
     
-    // Check the box to make it private
     await ownerPage.locator('input[type="checkbox"]').check();
     
     await ownerPage.click('button:has-text("Criar Playlist")');
     await expect(ownerPage.locator('text=Playlist criada com sucesso!')).toBeVisible();
     await ownerPage.close();
 
-    // 2. Searcher searches and should not find it
     const searcherContext = await browser.newContext();
     const searcherPage = await searcherContext.newPage();
     await searcherPage.goto('http://localhost:5173/register');
