@@ -14,7 +14,6 @@ async function signMusicUrls(music) {
     music.audioUrl = `http://localhost:${portBackend}/api/v1/music/stream/${music.id}/index.m3u8`;
   }
 
-  // Handle nested album cover
   if (music.album && music.album.coverUrl) {
     music.album.coverUrl = await S3Service.getPresignedUrl('cover', music.album.coverUrl);
   }

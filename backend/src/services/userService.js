@@ -45,12 +45,10 @@ export async function getArtistData(artistId) {
 }
 
 export async function updateArtistMusic(artistId, musicId, userId, userRole, data) {
-  // RN05 Somente artistas podem alterar dados de musicas
   if (userRole !== UserRole.ARTIST && userRole !== UserRole.ADMIN) {
     return { errorKey: "errors.forbidden", status: 403 };
   }
 
-  // Check if artist is the one requesting OR is admin
   if (artistId !== userId && userRole !== UserRole.ADMIN) {
     return { errorKey: "errors.forbidden", status: 403 };
   }
@@ -60,7 +58,6 @@ export async function updateArtistMusic(artistId, musicId, userId, userRole, dat
     return { errorKey: "errors.music_not_found", status: 404 };
   }
 
-  // RN06 Artistas não podem alterar dados de músicas de álbuns que não são de sua propriedade
   if (music.album.userId !== artistId && userRole !== UserRole.ADMIN) {
     return { errorKey: "errors.forbidden", status: 403 };
   }

@@ -51,7 +51,6 @@ export function PlayerBar() {
 
   return (
     <footer className="h-24 bg-white border-t border-gray-100 px-6 flex items-center justify-between sticky bottom-0 z-20 font-sans">
-      {/* Current Track */}
       <div className="flex items-center gap-4 w-1/3">
         {currentTrack ? (
           <>
@@ -74,7 +73,6 @@ export function PlayerBar() {
         )}
       </div>
 
-      {/* Controls */}
       <div className="flex flex-col items-center gap-2 flex-1 max-w-2xl">
         <div className="flex items-center gap-6">
           <button className="text-gray-400 hover:text-black transition-colors">
@@ -130,7 +128,6 @@ export function PlayerBar() {
         </div>
       </div>
 
-      {/* Volume */}
       <div className="flex items-center justify-end gap-3 w-1/3 text-gray-400">
         <button onClick={toggleMute} className="hover:text-black transition-colors">
           {isMuted || volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}

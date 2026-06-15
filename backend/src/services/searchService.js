@@ -31,7 +31,6 @@ export async function search(q, page, size) {
     }
 
     const artists = music.artists?.map(a => a.name) || [];
-    // Ensure the main artist (from album) is included if not in colab list
     const mainArtist = music.album?.user?.name;
     if (mainArtist && !artists.includes(mainArtist)) {
       artists.unshift(mainArtist);

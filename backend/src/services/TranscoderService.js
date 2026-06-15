@@ -15,7 +15,6 @@ export async function getAudioDuration(buffer, originalname) {
 
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(tempFile, (err, metadata) => {
-      // Cleanup temp file immediately
       fsPromises.unlink(tempFile).catch(() => {});
       
       if (err) return reject(err);
@@ -34,7 +33,6 @@ export async function convertToHLS(file, musicId) {
   const inputPath = path.join(tempDir, `input-${Date.now()}${path.extname(file.originalname)}`);
   const outputPath = path.join(tempDir, 'index.m3u8');
 
-  // Save buffer to temp file
   await fsPromises.writeFile(inputPath, file.buffer);
 
   return new Promise((resolve, reject) => {
@@ -48,7 +46,6 @@ export async function convertToHLS(file, musicId) {
       .output(outputPath)
       .on('end', async () => {
         try {
-          // Upload all files in tempDir to S3
           const files = await fsPromises.readdir(tempDir);
           const uploadPromises = files
             .filter(f => f.endsWith('.m3u8') || f.endsWith('.ts'))
@@ -68,7 +65,6 @@ export async function convertToHLS(file, musicId) {
 
           await Promise.all(uploadPromises);
 
-          // Cleanup
           await fsPromises.rm(tempDir, { recursive: true, force: true });
           
           resolve(`hls/${musicId}/index.m3u8`);

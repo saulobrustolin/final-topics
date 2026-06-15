@@ -7,7 +7,7 @@ import { api } from "../utils/api";
 export interface Music {
   id: number;
   title: string;
-  duration: string | number; // backend might send formatted string or seconds
+  duration: string | number;
   coverUrl?: string;
   artists?: string[];
   albumName?: string;
@@ -72,7 +72,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         hlsRef.current.destroy();
       }
     };
-  }, [queue, currentTrack]); // dependencies to ensure playNext captures latest state
+  }, [queue, currentTrack]);
 
   const loadAudio = async (track: Music) => {
     try {
@@ -87,9 +87,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         }
         const hls = new Hls({
           xhrSetup: (xhr) => {
-            // Apply auth headers to HLS fragment requests if needed.
-            // For now, if the proxy is public or relies on cookies, it might work,
-            // but if it requires Authorization header for chunks, we inject it here.
             const headers = getAuthHeaders();
             if (headers.Authorization) {
               xhr.setRequestHeader("Authorization", headers.Authorization);

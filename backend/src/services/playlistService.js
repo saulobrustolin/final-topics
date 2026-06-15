@@ -28,7 +28,6 @@ async function signPlaylistUrls(playlist) {
           musicCopy.coverUrl = await S3Service.getPresignedUrl('cover', musicCopy.coverUrl);
         }
         
-        // Convert owner relation to simple string and clean up
         musicCopy.owner = musicCopy.owner?.name || "Unknown Artist";
         delete musicCopy.ownerId;
         
@@ -78,7 +77,6 @@ export async function getPlaylist(playlistId, currentUserId) {
     return { errorKey: "errors.playlist_not_found", status: 404 };
   }
 
-  // RN01 Usuário não pode acessar paylist privadas que não foram criadas por ele
   if (playlist.isPrivate && playlist.userId !== currentUserId) {
     return { errorKey: "errors.forbidden", status: 403 };
   }

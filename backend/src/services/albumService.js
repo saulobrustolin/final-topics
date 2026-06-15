@@ -18,7 +18,6 @@ async function signMusicUrls(musics) {
       m.audioUrl = `http://localhost:${portBackend}/api/v1/music/stream/${m.id}`;
     }
     
-    // Convert owner relation to simple string and clean up
     m.owner = music.owner?.name || "Unknown Artist";
     delete m.ownerId;
     processed.push(m);
@@ -71,7 +70,6 @@ export async function listAlbumsByArtist(artistId) {
 }
 
 export async function createAlbumWithMusics(userId, albumData, files, metadata) {
-  // 1. Create Album
   const album = await albumRepository.createAlbum({
     title: albumData.title,
     description: albumData.description,
@@ -80,14 +78,12 @@ export async function createAlbumWithMusics(userId, albumData, files, metadata) 
     releaseDate: albumData.releaseDate ? new Date(albumData.releaseDate) : new Date()
   });
 
-  // 2. Upload and Create Musics
   const musicRecords = [];
   if (files && files.length > 0) {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const musicMeta = metadata[i] || {};
       
-      // First, create the music entry to get an ID
       let music = await musicRepository.createMusic({
         title: musicMeta.title || file.originalname,
         duration: 0, 
@@ -97,7 +93,6 @@ export async function createAlbumWithMusics(userId, albumData, files, metadata) 
         ownerId: userId
       });
 
-      // Handle Collabs
       if (musicMeta.collabs && Array.isArray(musicMeta.collabs)) {
         const collabUsers = [];
         for (const collabId of musicMeta.collabs) {
@@ -106,16 +101,13 @@ export async function createAlbumWithMusics(userId, albumData, files, metadata) 
             collabUsers.push(user);
           }
         }
-        // Link collabs via the ManyToMany relation
         music.artists = collabUsers;
         await musicRepository.updateMusic(music.id, { artists: collabUsers });
       }
 
-      // Transcode and upload HLS segments
       const hlsKey = await TranscoderService.convertToHLS(file, music.id);
       const duration = await TranscoderService.getAudioDuration(file.buffer, file.originalname);
       
-      // Update music with final HLS URL and real duration
       music = await musicRepository.updateMusic(music.id, {
         audioUrl: hlsKey,
         duration
@@ -125,7 +117,6 @@ export async function createAlbumWithMusics(userId, albumData, files, metadata) 
     }
   }
 
-  // Sign URLs for the returned data
   const signedAlbum = { ...album };
   if (signedAlbum.coverUrl) {
     signedAlbum.coverUrl = await S3Service.getPresignedUrl('cover', signedAlbum.coverUrl);

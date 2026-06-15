@@ -8,7 +8,7 @@ export const getToken = () => {
 };
 
 export const setToken = (token: string) => {
-  Cookies.set(TOKEN_KEY, token, { expires: 1 }); // 1 day
+  Cookies.set(TOKEN_KEY, token, { expires: 1 });
 };
 
 export const removeToken = () => {
