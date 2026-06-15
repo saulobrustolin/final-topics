@@ -9,11 +9,11 @@ test.describe('Playlist Operations', () => {
 
     const ownerContext = await browser.newContext();
     const ownerPage = await ownerContext.newPage();
-    await ownerPage.goto('http://localhost:5173/register');
+    await ownerPage.goto('/register');
     await ownerPage.fill('input[name="name"]', 'Owner User');
     await ownerPage.fill('input[name="email"]', ownerEmail);
     await ownerPage.fill('input[name="password"]', password);
-    await ownerPage.selectOption('select[name="role"]', 'listener');
+    await ownerPage.fill('input[name="confirmPassword"]', password);
     await ownerPage.click('button[type="submit"]');
     await expect(ownerPage).toHaveURL(/.*dashboard/);
 
@@ -25,11 +25,11 @@ test.describe('Playlist Operations', () => {
 
     const followerContext = await browser.newContext();
     const followerPage = await followerContext.newPage();
-    await followerPage.goto('http://localhost:5173/register');
+    await followerPage.goto('/register');
     await followerPage.fill('input[name="name"]', 'Follower User');
     await followerPage.fill('input[name="email"]', followerEmail);
     await followerPage.fill('input[name="password"]', password);
-    await followerPage.selectOption('select[name="role"]', 'listener');
+    await followerPage.fill('input[name="confirmPassword"]', password);
     await followerPage.click('button[type="submit"]');
     await expect(followerPage).toHaveURL(/.*dashboard/);
 
@@ -55,11 +55,11 @@ test.describe('Playlist Operations', () => {
 
     const ownerContext = await browser.newContext();
     const ownerPage = await ownerContext.newPage();
-    await ownerPage.goto('http://localhost:5173/register');
+    await ownerPage.goto('/register');
     await ownerPage.fill('input[name="name"]', 'Owner Private User');
     await ownerPage.fill('input[name="email"]', ownerEmail);
     await ownerPage.fill('input[name="password"]', password);
-    await ownerPage.selectOption('select[name="role"]', 'listener');
+    await ownerPage.fill('input[name="confirmPassword"]', password);
     await ownerPage.click('button[type="submit"]');
     await expect(ownerPage).toHaveURL(/.*dashboard/);
 
@@ -74,11 +74,11 @@ test.describe('Playlist Operations', () => {
 
     const searcherContext = await browser.newContext();
     const searcherPage = await searcherContext.newPage();
-    await searcherPage.goto('http://localhost:5173/register');
+    await searcherPage.goto('/register');
     await searcherPage.fill('input[name="name"]', 'Searcher User');
     await searcherPage.fill('input[name="email"]', searcherEmail);
     await searcherPage.fill('input[name="password"]', password);
-    await searcherPage.selectOption('select[name="role"]', 'listener');
+    await searcherPage.fill('input[name="confirmPassword"]', password);
     await searcherPage.click('button[type="submit"]');
     await expect(searcherPage).toHaveURL(/.*dashboard/);
 

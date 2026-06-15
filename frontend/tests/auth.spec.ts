@@ -9,7 +9,7 @@ test.describe('Authentication', () => {
     await page.fill('input[name="name"]', 'Test Listener');
     await page.fill('input[name="email"]', email);
     await page.fill('input[name="password"]', 'Password123!');
-    await page.selectOption('select[name="role"]', 'listener');
+    await page.fill('input[name="confirmPassword"]', 'Password123!');
     await page.click('button[type="submit"]');
 
     await expect(page).toHaveURL(/.*dashboard/);
@@ -25,6 +25,7 @@ test.describe('Authentication', () => {
     await page.fill('input[name="name"]', 'Login User');
     await page.fill('input[name="email"]', email);
     await page.fill('input[name="password"]', password);
+    await page.fill('input[name="confirmPassword"]', password);
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/.*dashboard/);
 
