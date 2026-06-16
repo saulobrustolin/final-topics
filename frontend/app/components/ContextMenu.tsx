@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ChevronRight, Trash } from "lucide-react";
 
 interface ContextMenuProps {
@@ -7,12 +7,12 @@ interface ContextMenuProps {
   onClose: () => void;
   playlists: { id: number; title: string }[];
   onAddToPlaylist: (playlistId: number) => void;
+  onDeleteToPlaylist: () => void;
 }
 
-export function ContextMenu({ x, y, onClose, playlists, onAddToPlaylist }: ContextMenuProps) {
+export function ContextMenu({ x, y, onClose, playlists, onAddToPlaylist, onDeleteToPlaylist }: ContextMenuProps) {
   const [showSubmenu, setShowSubmenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const submenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -54,18 +54,19 @@ export function ContextMenu({ x, y, onClose, playlists, onAddToPlaylist }: Conte
       style={{ top: adjustedY, left: adjustedX }}
     >
       <div
-        className="relative group"
+        className="relative"
         onMouseEnter={() => setShowSubmenu(true)}
         onMouseLeave={() => setShowSubmenu(false)}
       >
-        <button className={`w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-black hover:text-white transition-colors text-left ${showSubmenu ? 'bg-gray-50' : ''}`}>
+        <button 
+          className={`w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-black hover:text-white transition-colors text-left ${showSubmenu ? 'bg-gray-50' : ''}`}
+        >
           <span>Adicionar a playlist</span>
           <ChevronRight className="w-4 h-4" />
         </button>
 
         {showSubmenu && (
           <div
-            ref={submenuRef}
             className="absolute left-full top-0 ml-px bg-white border border-gray-100 shadow-xl rounded-lg py-1 w-56 animate-in fade-in slide-in-from-left-2 duration-100"
           >
             {playlists.length > 0 ? (
@@ -89,6 +90,17 @@ export function ContextMenu({ x, y, onClose, playlists, onAddToPlaylist }: Conte
           </div>
         )}
       </div>
+
+      <button 
+        onClick={() => {
+          onDeleteToPlaylist();
+          onClose();
+        }} 
+        className="w-full flex items-center justify-between px-3 py-2 text-sm text-red-500 hover:bg-black hover:text-white transition-colors text-left"
+      >
+        <span>Remover da playlist</span>
+        <Trash className="w-4 h-4" />
+      </button>
     </div>
   );
 }

@@ -52,15 +52,6 @@ export interface Playlist {
   userId: number
 }
 
-interface User {
-  bio?: string,
-  email: string,
-  id: number,
-  is_active: boolean,
-  name: String,
-  role: "listener" | "admin" | "artist"
-}
-
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -115,7 +106,6 @@ export default function Dashboard() {
       const response = await api.get("/user");
       const userData = response.data;
       const role = String(userData.role || "").toLowerCase();
-      console.log(userData);
 
       let items = [];
       if (role === "artist") {
@@ -494,6 +484,18 @@ export default function Dashboard() {
     }
   };
 
+  const handleDeleteToPlaylist = async (trackId: number, playlistId: number) => {
+    try {
+      await api.delete(`/playlist/${playlistId}/${trackId}`);
+      toast.success("Música deletada da playlist!");
+    } catch (err: any) {
+      const message = err.response?.data?.message || "Erro ao deletar música";
+      toast.error(message);
+    } finally {
+      fetchPlaylistDetails(playlistId);
+    }
+  };
+
   const PlaylistSearchResultList = ({ playlists, onSelectPlaylist, onFollow }: { playlists: PlaylistResult[], onSelectPlaylist: (id: number) => void, onFollow: (id: number) => void }) => (
     <div className="p-8">
       {playlists.length === 0 ? (
@@ -603,6 +605,7 @@ export default function Dashboard() {
                           tracks={searchResults.tracks}
                           playlists={playlists}
                           onAddToPlaylist={handleAddToPlaylist}
+                          onDeleteToPlaylist={handleDeleteToPlaylist}
                         />
                       )
                     },
@@ -640,9 +643,11 @@ export default function Dashboard() {
                   coverUrl={selectedPlaylist.coverUrl}
                   owner={selectedPlaylist.owner}
                   type="playlist"
+                  playlistOwner={selectedPlaylist}
                   tracks={formatMusicData(selectedPlaylist.musics || [])}
                   playlists={playlists.filter(p => p.userId == user.id)}
                   onAddToPlaylist={handleAddToPlaylist}
+                  onDeleteToPlaylist={handleDeleteToPlaylist}
                   onEdit={selectedPlaylist.userId === user?.id ? handleOpenEditPlaylist : undefined}
                   isPrivate={selectedPlaylist.isPrivate}
                 />

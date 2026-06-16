@@ -14,11 +14,13 @@ interface MainContentProps {
   tracks: Music[];
   playlists?: Playlist[];
   onAddToPlaylist?: (trackId: number, playlistId: number) => void;
+  onDeleteToPlaylist?: (trackId: number, playlistId: number) => void;
   onEdit?: () => void;
   isPrivate?: boolean;
+  playlistOwner?: any;
 }
 
-export function MainContent({ title, description, coverUrl, owner, type, tracks, playlists = [], onAddToPlaylist, onEdit, isPrivate }: MainContentProps) {
+export function MainContent({ title, description, coverUrl, owner, type, tracks, playlists = [], onAddToPlaylist, onDeleteToPlaylist, onEdit, isPrivate, playlistOwner }: MainContentProps) {
   const { playTrack, setQueue, currentTrack, isPlaying } = usePlayer();
   
   const [menuConfig, setMenuConfig] = useState<{ x: number, y: number, trackId: number } | null>(null);
@@ -149,6 +151,7 @@ export function MainContent({ title, description, coverUrl, owner, type, tracks,
           y={menuConfig.y}
           playlists={playlists.filter(p => ({ id: p.id, title: p.title }))}
           onClose={() => setMenuConfig(null)}
+          onDeleteToPlaylist={() => onDeleteToPlaylist?.(menuConfig.trackId, playlistOwner.id)}
           onAddToPlaylist={(playlistId) => onAddToPlaylist?.(menuConfig.trackId, playlistId)}
         />
       )}
